@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include<time.h>
 #include<string.h>
+#include<limits.h>
 #define M 100
 #define N 100
 int processes[M][7];
@@ -124,6 +125,123 @@ void rearrange(int p[][7], int n)
 	display(p,n);*/
 }
 
+void sjf_No_Preempt(int ps[][7], int n)
+{
+	int completed = 0;
+	int current_time = 0;
+	int  is_completed[100] = {0};
+
+	while(completed != n)
+	{
+		int idx = -1;
+		int mn = INT_MAX;
+		for(int i = 0; i < n; i++)
+		{
+			if(ps[i][arr] <= current_time && is_completed[i] == 0)
+			{
+				if(ps[i][bst] < mn)
+				{
+					mn = ps[i][bst];
+					idx = i;
+				}
+				if(ps[i][bst] == mn)
+				{
+					if(ps[i][arr] < ps[idx][arr])
+					{
+						mn = ps[i][bst];
+						idx = i;
+					}
+				}
+			}
+		}
+		if(idx != -1)
+		{
+			ps[idx][ct]  = current_time + ps[idx][bst];
+			ps[idx][tat] = ps[idx][ct] - ps[idx][arr];
+			ps[idx][wt]  = ps[idx][tat] - ps[idx][bst];
+			is_completed[idx] = 1;
+			completed++;
+			current_time = ps[idx][ct];
+
+		}
+		else
+		{ current_time++; }
+	}
+
+
+
+
+	printf("\n******************Gantt chart after SJF Non Preemptive ******************\n");
+	printf("\n\n----------------------------------------------\n");
+	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
+	printf("\n----------------------------------------------\n");
+
+}
+
+void sjf_Preempt(int ps[][7], int n)
+{
+	int current_time = 0;
+	int completed = 0;
+	int is_completed[100] = {0};
+	int burst_remaining[100]={0};
+
+	for(int i = 0 ;i <n ;i++)
+		burst_remaining[i] = ps[i][bst];
+
+
+
+	while(completed != n)
+	{
+		int idx = -1;
+		int mn = 10000000;
+		for(int i = 0; i < n; i++)
+		{
+			if(ps[i][arr] <= current_time && is_completed[i] == 0)
+			{
+				if(burst_remaining[i] < mn)
+				{
+					mn = burst_remaining[i];
+					idx = i;
+				}
+				if(burst_remaining[i] == mn)
+				{
+					if(ps[i][arr] < ps[idx][arr])
+					{
+						mn = burst_remaining[i];
+						idx = i;
+					}
+				}
+			}
+		}
+		if(idx != -1)
+		{
+			burst_remaining[idx] -= 1;
+			current_time++;
+			if(burst_remaining[idx] == 0)
+
+			{
+				ps[idx][ct] = current_time;
+				ps[idx][tat] = ps[idx][ct] - ps[idx][arr];
+				ps[idx][wt] = ps[idx][tat] - ps[idx][bst];
+				is_completed[idx] = 1;
+				completed++;
+			}
+		}
+		else
+		{
+			current_time++;
+		}
+	}
+
+
+	printf("\n******************Gantt chart after SJF Preemptive ******************\n");
+
+	printf("\n\n----------------------------------------------\n");
+	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
+	printf("\n----------------------------------------------\n");
+
+}
+
 void sjf(int processes[][7], int n)
 {// arranging data as per the burst time
 	for(int i=0; i<n;i++)
@@ -170,6 +288,7 @@ void sjf(int processes[][7], int n)
 	printf("\n\n----------------------------------------------\n");
 
 }
+
 
 void rr(int processes[][7], int n){
 	int quant= 0, sum=0;
@@ -436,41 +555,48 @@ void multi(int processes[][7], int n){
 
 }
 
+
+void runMyTestCase(int *n)
+{
+	//*n = 5;
+	//int test[5][7] = { {0,1,7,0,0,0,0},{0,2,5,0,0,0,0},{0,3,1,0,0,0,0},{0,4,2,0,0,0,0},{0,5,8,0,0,0,0} };
+
+
+	*n = 6;
+	int test[6][7] = { {0,0,7,0,0,0,0},{0,1,5,0,0,0,0},{0,2,3,0,0,0,0},{0,3,1,0,0,0,0},{0,4,2,0,0,0,0},{0,5,1,0,0,0,0} };
+
+
+	for(int i = 0;i<6;i++)
+		for(int j = 0 ;j <7;j++)
+			processes[i][j] = test[i][j];
+
+}
+
 int main(int argc, char *argv[])
 {
-	//process id's
+
 	int randomNo;
 	srand(time(0));
 	int n=(rand() % 4)+2;// no. of processes
 	printf("\033[2J\033[0;0H");
-	printf("Total no. of processes = %d \n",n);
 
 	for (int i = 0; i < n; i++) {
 		randomNo = (rand() % 10) + 1;
-		processes[i][0] =0 ; //processes ID
-		processes[i][1]=(rand() % 10);//processes arrival time
-		processes[i][2]=randomNo;// processes burst time
-		processes[i][3]=0;
-		processes[i][4]=0;
-		processes[i][5]=0;
-		processes[i][5]=0;
-		//printf("%d    \t \t%dms    \t \t%dms\n", processes[i][0], processes[i][1], processes[i][2]);
+		processes[i][pid] =0 ;
+		processes[i][arr]=(rand() % 10);
+		processes[i][bst]= randomNo;
+		processes[i][wt]=0;
+		processes[i][tat]=0;
+		processes[i][ct]=0;
+		processes[i][prior]=0;
 	}
+
+	runMyTestCase(&n);
 
 	rearrange(processes,n); // arranging data as per the arrival time
 
 	char ch = 'Y';
 	while('Y' == ch || 'y' == ch){
-		int maxcmds=7;
-		char * cmdlist[]={
-				"fifo",
-				"SJF",
-				"RR",
-				"Priority_based_Scheduling",
-				"Multi_level_Queues",
-				"Multi_level_Feedback_Queues",
-				"Linux_Scheduler"
-		};
 
 		fflush(stdin);
 
@@ -480,25 +606,18 @@ int main(int argc, char *argv[])
 		display(processes,n);
 
 		printf("\nEnter 0 : FIFO 				Scheduling\n");
-		printf("Enter 1 : SJF  				Scheduling\n");
-		printf("Enter 2 : RR   				Scheduling\n");
-		printf("Enter 3 : PRIORITY BASED		Scheduling\n");
-		printf("Enter 4 : MULTI LEVEL Q 		Scheduling\n");
-		printf("Enter 5 : MULTI LEVEL Q FEEDBACK 	Scheduling\n");
-		printf("Enter 6 : LINUX SCHEDULER 		Scheduling\n");
+		printf("Enter 1 : SJF NON-PREEMPT		Scheduling\n");
+		printf("Enter 2 : SJF PREEMPTIVE		Scheduling\n");
+		printf("Enter 3 : RR   				Scheduling\n");
+		printf("Enter 4 : PRIORITY BASED		Scheduling\n");
+		printf("Enter 5 : MULTI LEVEL Q 		Scheduling\n");
+		printf("Enter 6 : MULTI LEVEL Q FEEDBACK 	Scheduling\n");
+		printf("Enter 7 : LINUX SCHEDULER 		Scheduling\n");
 
 
 
 		int cmdfound=-1;
 		scanf("%d",&cmdfound);
-/*
-		memcpy( ro,processes,M*7*sizeof(int));
-		memcpy( fifo,processes,M*7*sizeof(int));
-		memcpy( sjff,processes, M*7*sizeof(int));
-		memcpy( prior,processes,M*7*sizeof(int));
-		memcpy( priorp,processes,M*7*sizeof(int));
-		memcpy( mlq,processes,M*7*sizeof(int));*/
-
 
 		switch(cmdfound){
 		case 0:
@@ -510,24 +629,31 @@ int main(int argc, char *argv[])
 		break;
 		case 1:
 		{
-			sjf(processes, n);
+			sjf_No_Preempt(processes, n);
 			display(processes, n);
 			calAvg(processes, n, 1);
 		}
 		break;
 		case 2:
 		{
+			sjf_Preempt(processes, n);
+			display(processes, n);
+			calAvg(processes, n, 1);
+		}
+		break;
+		case 3:
+		{
 			rr(processes,n);
 			display(processes, n);
 			calAvg(processes, n, 2);
 		}
 		break;
-		case 3:
+		case 4:
 		{
 			priority(processes,priorp ,n);
 		}
 		break;
-		case 4:
+		case 5:
 		{
 			multi(mlq, n);
 		}
