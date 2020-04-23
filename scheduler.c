@@ -591,7 +591,7 @@ int main(int argc, char *argv[])
 		processes[i][prior]=0;
 	}
 
-	runMyTestCase(&n);
+	//runMyTestCase(&n);  // This is custome driver commented by monika
 
 	// This is my comment
 	rearrange(processes,n); // arranging data as per the arrival time
