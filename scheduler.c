@@ -133,7 +133,7 @@ void sjf_No_Preempt(int ps[][7], int n)
 
 	while(completed != n)
 	{
-		int idx = -1;
+		int ps_id = -1;
 		int mn = INT_MAX;
 		for(int i = 0; i < n; i++)
 		{
@@ -142,26 +142,26 @@ void sjf_No_Preempt(int ps[][7], int n)
 				if(ps[i][bst] < mn)
 				{
 					mn = ps[i][bst];
-					idx = i;
+					ps_id = i;
 				}
 				if(ps[i][bst] == mn)
 				{
-					if(ps[i][arr] < ps[idx][arr])
+					if(ps[i][arr] < ps[ps_id][arr])
 					{
 						mn = ps[i][bst];
-						idx = i;
+						ps_id = i;
 					}
 				}
 			}
 		}
-		if(idx != -1)
+		if(ps_id != -1)
 		{
-			ps[idx][ct]  = current_time + ps[idx][bst];
-			ps[idx][tat] = ps[idx][ct] - ps[idx][arr];
-			ps[idx][wt]  = ps[idx][tat] - ps[idx][bst];
-			is_completed[idx] = 1;
+			ps[ps_id][ct]  = current_time + ps[ps_id][bst];
+			ps[ps_id][tat] = ps[ps_id][ct] - ps[ps_id][arr];
+			ps[ps_id][wt]  = ps[ps_id][tat] - ps[ps_id][bst];
+			is_completed[ps_id] = 1;
 			completed++;
-			current_time = ps[idx][ct];
+			current_time = ps[ps_id][ct];
 
 		}
 		else
@@ -183,47 +183,47 @@ void sjf_Preempt(int ps[][7], int n)
 	int current_time = 0;
 	int completed = 0;
 	int is_completed[100] = {0};
-	int burst_remaining[100]={0};
+	int burstRemain[100]={0};
 
 	for(int i = 0 ;i <n ;i++)
-		burst_remaining[i] = ps[i][bst];
+		burstRemain[i] = ps[i][bst];
 
 
 
 	while(completed != n)
 	{
-		int idx = -1;
+		int ps_id = -1;
 		int mn = 10000000;
 		for(int i = 0; i < n; i++)
 		{
 			if(ps[i][arr] <= current_time && is_completed[i] == 0)
 			{
-				if(burst_remaining[i] < mn)
+				if(burstRemain[i] < mn)
 				{
-					mn = burst_remaining[i];
-					idx = i;
+					mn = burstRemain[i];
+					ps_id = i;
 				}
-				if(burst_remaining[i] == mn)
+				if(burstRemain[i] == mn)
 				{
-					if(ps[i][arr] < ps[idx][arr])
+					if(ps[i][arr] < ps[ps_id][arr])
 					{
-						mn = burst_remaining[i];
-						idx = i;
+						mn = burstRemain[i];
+						ps_id = i;
 					}
 				}
 			}
 		}
-		if(idx != -1)
+		if(ps_id != -1)
 		{
-			burst_remaining[idx] -= 1;
+			burstRemain[ps_id] -= 1;
 			current_time++;
-			if(burst_remaining[idx] == 0)
+			if(burstRemain[ps_id] == 0)
 
 			{
-				ps[idx][ct] = current_time;
-				ps[idx][tat] = ps[idx][ct] - ps[idx][arr];
-				ps[idx][wt] = ps[idx][tat] - ps[idx][bst];
-				is_completed[idx] = 1;
+				ps[ps_id][ct] = current_time;
+				ps[ps_id][tat] = ps[ps_id][ct] - ps[ps_id][arr];
+				ps[ps_id][wt] = ps[ps_id][tat] - ps[ps_id][bst];
+				is_completed[ps_id] = 1;
 				completed++;
 			}
 		}
@@ -290,6 +290,134 @@ void sjf(int processes[][7], int n)
 }
 
 
+int queue[100],front=0,rear=0,size=100;
+
+void Q_PUSH(int data)
+{
+	if(rear==size)
+	{
+		//printf("\n Queue is Full");
+
+	}
+	else
+	{
+		queue[rear++] = data;
+	}
+}
+
+int Q_FRONT()
+{
+	return queue[front];
+}
+
+void Q_POP()
+{
+	if(front==rear)
+	{
+
+		//printf("\n Queue is Empty");
+	}
+	else
+	{
+		front++;
+		size++;
+	}
+}
+
+void Q_DISPLAY()
+{
+	printf("\n");
+	for(int i = front;i<rear;i++)
+		printf("%d ",queue[i]);
+	printf("\n");
+}
+
+unsigned char Q_EMPTY()
+{
+	return (front==rear);
+}
+
+void rr(int ps[][7], int n){
+
+	int quant= 0, sum=0;
+	int times[n];// array of burst time to keep a track
+	int x=0;
+	printf("Enter the quantum\n");
+	scanf("%d", &quant);
+
+
+	int current_time = 0;
+	int completed = 0;
+	int is_completed[100] = {0};
+	int burstRemain[100];
+
+	for(int i = 0 ;i <n ;i++)
+		burstRemain[i] = ps[i][bst];
+
+	int ps_id;
+	Q_PUSH(0);
+	int mark[100];
+	memset(mark,0,sizeof(mark));
+	mark[0] = 1;
+
+	while(completed != n) {
+		ps_id = Q_FRONT();
+		Q_POP();
+
+		if(burstRemain[ps_id] == ps[ps_id][bst]) {
+			if(current_time<ps[ps_id][arr])
+				current_time = ps[ps_id][arr];
+		}
+
+		if(burstRemain[ps_id]-quant > 0) {
+			burstRemain[ps_id] -= quant;
+			current_time += quant;
+		}
+		else {
+			current_time += burstRemain[ps_id];
+			burstRemain[ps_id] = 0;
+			completed++;
+
+			ps[ps_id][ct] = current_time;
+			ps[ps_id][tat] = ps[ps_id][ct] - ps[ps_id][arr];
+			ps[ps_id][wt] = ps[ps_id][tat] - ps[ps_id][bst];
+
+		}
+
+		for(int i = 1; i < n; i++) {
+			if(burstRemain[i] > 0 && ps[i][arr] <= current_time && mark[i] == 0) {
+				Q_PUSH(i);
+				mark[i] = 1;
+			}
+		}
+		if(burstRemain[ps_id] > 0) {
+			Q_PUSH(ps_id);
+		}
+
+		if(Q_EMPTY()) {
+			for(int i = 1; i < n; i++) {
+				if(burstRemain[i] > 0) {
+					Q_PUSH(i);
+					mark[i] = 1;
+					break;
+				}
+			}
+		}
+
+
+	}
+
+
+	printf("\n******************Gantt chart after Round-Robin*****************\n");
+
+	printf("\n\n----------------------------------------------\n");
+	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
+	printf("\n\n----------------------------------------------\n");
+
+
+}
+
+/*
 void rr(int processes[][7], int n){
 	int quant= 0, sum=0;
 	int times[n];// array of burst time to keep a track
@@ -333,7 +461,7 @@ void rr(int processes[][7], int n){
 	printf("\n\n----------------------------------------------\n");
 
 
-}
+} */
 void pnp(int processes[][7], int n){
 	//arranging Data as per its priority
 	for(int i=0; i<n;i++)
@@ -559,14 +687,14 @@ void multi(int processes[][7], int n){
 void runMyTestCase(int *n)
 {
 	//*n = 5;
-	//int test[5][7] = { {0,1,7,0,0,0,0},{0,2,5,0,0,0,0},{0,3,1,0,0,0,0},{0,4,2,0,0,0,0},{0,5,8,0,0,0,0} };
+	//int test[5][7] = { {0,0,5,0,0,0,0},{0,1,3,0,0,0,0},{0,2,1,0,0,0,0},{0,3,2,0,0,0,0},{0,4,3,0,0,0,0} };
 
 
 	*n = 6;
-	int test[6][7] = { {0,0,7,0,0,0,0},{0,1,5,0,0,0,0},{0,2,3,0,0,0,0},{0,3,1,0,0,0,0},{0,4,2,0,0,0,0},{0,5,1,0,0,0,0} };
+	int test[6][7] = { {0,0,4,0,0,0,0},{0,1,5,0,0,0,0},{0,2,2,0,0,0,0},{0,3,1,0,0,0,0},{0,4,6,0,0,0,0},{0,6,3,0,0,0,0} };
 
 
-	for(int i = 0;i<6;i++)
+	for(int i = 0;i<*n;i++)
 		for(int j = 0 ;j <7;j++)
 			processes[i][j] = test[i][j];
 
