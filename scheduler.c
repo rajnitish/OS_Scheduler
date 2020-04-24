@@ -14,18 +14,13 @@
 #include<time.h>
 #include<string.h>
 #include<limits.h>
+#include"Queue.h"
+
 #define M 100
 #define N 100
 int processes[M][7];
-int fifo[M][7];
-int sjff[M][7];
 int ro[M][7];
-//int prior[M][7];
 int priorp[M][7];
-int mlq[M][7];
-int q1[M][7];
-int q2[M][7];
-int q3[M][7];
 
 #define RUN_MY_TESTCASE
 
@@ -35,6 +30,8 @@ double avg_wt[8] ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}, avg_tat[8] ={0.0,0.0,0.0,0.
 
 void display(int processes[][7],int n)
 {
+	printf("\nPID\tArrival\tBurst\tWait \tTAT \tCT  \tPriority \n");
+	printf("---\t-------\t-----\t---- \t--- \t--  \t-------- \n");
 
 	for(int i= 0; i< n;i++)
 	{
@@ -44,8 +41,7 @@ void display(int processes[][7],int n)
 		}
 		printf("\n");
 	}
-	printf("\n\n----------------------------------------------\n");
-
+	printf("---------------------------------------------------------\n\n");
 
 }
 // Calculate total waiting time and total turn around time
@@ -112,7 +108,7 @@ void gantt(int ps[][7],int n){
 	printf("\n");
 }
 
-void ff( int ps[][7], int n)
+void performFCFS( int ps[][7], int n)
 {
 	ps[0][wt]=0;
 	ps[0][tat]=ps[0][bst];
@@ -137,19 +133,15 @@ void ff( int ps[][7], int n)
 	}
 
 	//Display processes along with all details
-	printf("\n****************Scheduling Parameters after FIFO******************\n");
-	printf("\n\n----------------------------------------------\n");
-	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \tPriority \n");
-	printf("\n----------------------------------------------\n");
-
+	printf("\n****************Scheduling Parameters after FCFS******************\n");
 
 }
 
 void change(int *a, int *b)
 {
-	int temp =*a;
-	*a=*b;
-	*b=temp;
+	*a = *a +*b;
+	*b = *a - *b;
+	*a = *a - *b;
 }
 
 void rearrange(int p[][7], int n)
@@ -170,13 +162,9 @@ void rearrange(int p[][7], int n)
 	for(int i=0;i<n;i++){
 		processes[i][0]=i+1;
 	}
-	/*	printf("\n\n----------------------------------------------\n");
-	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-	printf("\n\n----------------------------------------------\n");
-	display(p,n);*/
 }
 
-void sjf_No_Preempt(int ps[][7], int n)
+void performSJF_NON_PREEMPT(int ps[][7], int n)
 {
 	int completed = 0;
 	int current_time = 0;
@@ -219,17 +207,11 @@ void sjf_No_Preempt(int ps[][7], int n)
 		{ current_time++; }
 	}
 
-
-
-
-	printf("\n******************Scheduling Parameters after SJF Non Preemptive ******************\n");
-	printf("\n\n----------------------------------------------\n");
-	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-	printf("\n----------------------------------------------\n");
+	printf("\n*********Scheduling Parameters after SJF Non Preemptive **********\n");
 
 }
 
-void sjf_Preempt(int ps[][7], int n)
+void performSJF_PREEMPT(int ps[][7], int n)
 {
 	int current_time = 0;
 	int completed = 0;
@@ -284,69 +266,12 @@ void sjf_Preempt(int ps[][7], int n)
 		}
 	}
 
-
-	printf("\n******************Scheduling Parameters after SJF Preemptive ******************\n");
-
-	printf("\n\n----------------------------------------------\n");
-	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-	printf("\n----------------------------------------------\n");
+	printf("\n*********Scheduling Parameters after SJF Preemptive **********\n");
 
 }
 
 
-int queue[100],front=0,rear=0,size=100;
-
-void Q_PUSH(int data)
-{
-	if(rear==size)
-	{
-		//printf("\n Queue is Full");
-
-	}
-	else
-	{
-		queue[rear++] = data;
-	}
-}
-
-int Q_FRONT()
-{
-	return queue[front];
-}
-
-void Q_POP()
-{
-	if(front==rear)
-	{
-
-		//printf("\n Queue is Empty");
-	}
-	else
-	{
-		front++;
-		size++;
-	}
-}
-
-void Q_DISPLAY()
-{
-	printf("\n");
-	for(int i = front;i<rear;i++)
-		printf("%d ",queue[i]);
-	printf("\n");
-}
-
-unsigned char Q_EMPTY()
-{
-	return (front==rear);
-}
-
-void rr(int ps[][7], int n){
-
-	int quant= 0;
-	printf("Enter the quantum\n");
-	scanf("%d", &quant);
-
+void performRR(int ps[][7], int n,int quant){
 
 	int current_time = 0;
 	int completed = 0;
@@ -356,14 +281,16 @@ void rr(int ps[][7], int n){
 		burstRemain[i] = ps[i][bst];
 
 	int ps_id;
-	Q_PUSH(0);
+	struct Q readyQ;
+	Q_init(&readyQ);
+	Q_PUSH(&readyQ,0);
 	int mark[100];
 	memset(mark,0,sizeof(mark));
 	mark[0] = 1;
 
 	while(completed != n) {
-		ps_id = Q_FRONT();
-		Q_POP();
+		ps_id = Q_FRONT(&readyQ);
+		Q_POP(&readyQ);
 
 		if(burstRemain[ps_id] == ps[ps_id][bst]) {
 			if(current_time<ps[ps_id][arr])
@@ -387,18 +314,18 @@ void rr(int ps[][7], int n){
 
 		for(int i = 1; i < n; i++) {
 			if(burstRemain[i] > 0 && ps[i][arr] <= current_time && mark[i] == 0) {
-				Q_PUSH(i);
+				Q_PUSH(&readyQ,i);
 				mark[i] = 1;
 			}
 		}
 		if(burstRemain[ps_id] > 0) {
-			Q_PUSH(ps_id);
+			Q_PUSH(&readyQ,ps_id);
 		}
 
-		if(Q_EMPTY()) {
+		if(Q_EMPTY(&readyQ)) {
 			for(int i = 1; i < n; i++) {
 				if(burstRemain[i] > 0) {
-					Q_PUSH(i);
+					Q_PUSH(&readyQ,i);
 					mark[i] = 1;
 					break;
 				}
@@ -409,16 +336,12 @@ void rr(int ps[][7], int n){
 	}
 
 
-	printf("\n******************Gantt chart after Round-Robin*****************\n");
 
-	printf("\n\n----------------------------------------------\n");
-	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-	printf("\n\n----------------------------------------------\n");
-
+	printf("\n*********Scheduling Parameters after Round Robin **********\n");
 
 }
 
-void pnp(int ps[][7], int n){
+void performPRIORITY_NON_PREEMPT(int ps[][7], int n){
 	int completed = 0;
 	int current_time = 0;
 	int  is_completed[100] = {0};
@@ -460,19 +383,12 @@ void pnp(int ps[][7], int n){
 		{ current_time++; }
 	}
 
-
-
-
-	printf("\n******************Process Parameters after Priority Non Preemptive ******************\n");
-	printf("\n\n----------------------------------------------\n");
-	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-	printf("\n----------------------------------------------\n");
-
+	printf("\n*********Process Parameters after Priority Non Preemptive ********\n");
 	display(processes, n);
 	calAvg(processes, n, 3);
 }
 // priority with preemption
-void pp(int ps[][7],int n){
+void performPRIORITY_PREEMPT(int ps[][7],int n){
 	int current_time = 0;
 	int completed = 0;
 	int is_completed[100] = {0};
@@ -525,14 +441,12 @@ void pp(int ps[][7],int n){
 			current_time++;
 		}
 	}
-	printf("\n******************Process Parameters after Priority with Preemption ******************\n");
-	printf("\n\n----------------------------------------------\n");
-	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-	printf("\n----------------------------------------------\n");
+
+	printf("\n*********Process Parameters after Priority Preemptive ********\n");
 	display(processes, n);
 	calAvg(processes, n, 4);
 }
-void priority(int processes[][7],int n,int option){
+void performPRIORITY(int processes[][7],int n,int option){
 
 	if(option == 0) // Internal Priority with Preemption
 	{
@@ -543,7 +457,7 @@ void priority(int processes[][7],int n,int option){
 		}
 #endif
 
-		pp(processes,n);
+		performPRIORITY_PREEMPT(processes,n);
 	}
 	else if(option == 1) // Internal Priority without Preemption
 	{
@@ -553,134 +467,136 @@ void priority(int processes[][7],int n,int option){
 			processes[i][6]=(rand() % 4)+2;
 		}
 #endif
-		pnp(processes,n);
+		performPRIORITY_NON_PREEMPT(processes,n);
 	}
 	else if(option == 2) // External Priority with Preemption
 	{
-		printf("Kindly enter the priority of each process: 0 is the highest priority");
+		printf("Kindly enter the priority of each process: 0 being considered as highest priority\n");
 		for(int i=0; i<n;i++){
 			printf("Enter priority for Process P%d\t",i+1);
 			scanf("%d",&processes[i][6]);
 		}
-		pp(processes,n);
+		performPRIORITY_PREEMPT(processes,n);
 	}
 	else if(option == 3) // External Priority without Preemption
 	{
-		printf("Kindly enter the priority of each process: 0 is the highest priority");
+		printf("Kindly enter the priority of each process: 0 being considered as highest priority\n");
 		for(int i=0; i<n;i++){
 			printf("Enter priority for Process P%d\t",i+1);
 			scanf("%d",&processes[i][6]);
 		}
-		pnp(processes,n);
+		performPRIORITY_NON_PREEMPT(processes,n);
 	}
 
-	//display(processes,n);
-	//calAvg(processes, n, 3);
 }
 
-void multi(int processes[][7], int n){
-	printf("Dividing the processes in 3 levels of queue\n");
+void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
+	printf("Dividing the processes in 3 levels of queue based upon priority \n");
+	printf("[0 - 2] Upper Level (First to serve)  [3 - 5] Mid Level (Next to serve) [Above 6] Last Level\n ");
+
+#ifndef RUN_MY_TESTCASE
 	for(int i=0; i<n;i++){
 		processes[i][6]=(rand() % 7); // randomly assigning the priorities
 	}
-	int q1[n][7], q2[n][7], q3[n][7], times[n], ttimes[n];
-	int x=0,y=0,z=0,a=0,b=0, tsum=0, sum=0,avg_w,avg_t,q, quant=3;
+#endif
+
+	int q1[n][7], q2[n][7], q3[n][7];
+	int x=0,y=0,z=0,q, quant=3;
 	// switch case to assign different queues to each process as per it priority i.e 0-2  assign to q1 and so on..
-	for(int i=0;i<n;i++){
-		q=processes[i][6];
-		switch(q){
-		case 0 ... 2:	for(int k=0;k<7;k++){
+
+	for(int i=0;i<n;i++)
+	{
+		q = processes[i][6];
+
+		switch(q)
+		{
+		case 0 ... 2:
+		for(int k=0;k<7;k++)
+		{
 			q1[x][k]=processes[i][k];
 		}
 		x++;
 		break;
-		case 3 ... 5: for(int k=0;k<7;k++){
-			q2[y][k]=processes[i][k];}
+		case 3 ... 5:
+		for(int k=0;k<7;k++)
+		{
+			q2[y][k]=processes[i][k];
+		}
 		y++;
 		break;
-		default : for(int k=0;k<7;k++){
-			q3[z][k]=processes[i][k];}
-		z++;
-		break;
+		default :
+			for(int k=0;k<7;k++)
+			{
+				q3[z][k]=processes[i][k];
+			}
+			z++;
+			break;
 		}
 	}
-	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-	display(mlq, n);
-	for(int i=0; i<n; i++){
-		tsum += processes[i][2];
-		ttimes[i]= processes[i][2];
-		processes[i][1]=0;
-	}
 
-	// The three queues are getting implemented using round robin
-	//while(tsum != b){
-	//processing the first queue
-	for(int i=0;i<x;i++){
-		sum+= q1[i][2];
-		times[i]= q1[i][2];// copying the burst time
-		q1[i][1]=0;}
+
+
+/******** Queues Displaying Levels********/
+	printf("\nPID\tArrival\tBurst\tWait \tTAT \tCT  \tPriority \n");
+	printf("---\t-------\t-----\t---- \t--- \t--  \t-------- \n");
+	if(x == 0) printf("   NO PROCESS IN UPPER LEVEL QUEUE    \n");
+	for(int i= 0; i< x;i++){
+		for (int k=0; k<7; k++)
+			printf("%d \t", q1[i][k]);
+	printf("\n"); }
+	printf("---------------------------------------------------------\n");
+
+	if(y == 0) printf("    NO PROCESS IN MID LEVEL QUEUE     \n");
+	for(int i= 0; i< y;i++){
+		for (int k=0; k<7; k++)
+			printf("%d \t", q2[i][k]);
+	printf("\n");}
+	printf("---------------------------------------------------------\n");
+	if(z == 0) printf("   NO PROCESS IN LAST LEVEL QUEUE    \n");
+	for(int i= 0; i< z;i++){
+		for (int k=0; k<7; k++)
+			printf("%d \t", q3[i][k]);
+	printf("\n");}
+	printf("---------------------------------------------------------\n");
+/***************************************/
+
+
 	if(x !=0)// checking if the queue is not empty
 	{
-		printf("Processing the first queue\n");
-		while(sum !=a){
-			for(int i= 0; i<x;i++){
-				if(times[i]> quant){
-					times[i]-=quant;
-					q1[i][5]= a + quant;
-					a +=quant;
-
-				}
-				else if (times[i]==0){
-					printf("\n");
-				}
-
-				else{
-					q1[i][5]= a + times[i];
-					a +=times[i];
-					times[i]=0;
-
-				}
-			}
-		}
-		for(int i=0; i<n;i++){
-			q1[i][4]= q1[i][5];
-			q1[i][3]=q1[i][5]- q1[i][2];
-		}
-
-		printf("\n*********************Gantt chart after Round-Robin  with MLQ*******************\n");
-
-		printf("\n\n----------------------------------------------\n");
-		printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-		printf("\n\n----------------------------------------------\n");
-
+		printf("\nProcessing the first queue\n");
+		performRR(q1,x,quant);
 		display(q1, x);
 		calAvg(q1, x, 5);
 	}
 	else
-		printf("First queue is empty\n");
-	if (y != 0){
-		printf("Processing  the second queue\n");
-		sjf_No_Preempt(q2,y);
+		printf("\nFirst queue is empty\n");
+
+	if (y != 0)
+	{
+		printf("\nProcessing  the second queue\n");
+		performSJF_NON_PREEMPT(q2,y);
 		display(q2, y);
-		calAvg(q2, y, 6);}
+		calAvg(q2, y, 6);
+	}
 	else
-		printf("Second queue is empty\n");
-	if(z!=0){
-		printf("Processing  the third queue\n");
-		ff(q3,z);
+		printf("\nSecond queue is empty\n");
+
+	if(z!=0)
+	{
+		printf("\nProcessing  the third queue\n");
+		performFCFS(q3,z);
 		display(q3, z);
-		calAvg(q3, z, 7);}
+		calAvg(q3, z, 7);
+	}
 	else
-		printf("Third queue is empty\n");
-	avg_w=avg_wt[5]+avg_wt[6]+avg_wt[7];
-	avg_t=avg_tat[5]+avg_tat[6]+avg_tat[7];
-	avg_wt[5]=(float)avg_w / (float)3;// vector to hold the weighting time of all the scheduling at different index values
-	avg_tat[5]=(float)avg_t / (float)3;// vector to hold the weighting time of all the scheduling at different index values
+		printf("\nThird queue is empty\n");
+
+	int active_count = ((x>0)?1:0)+((y>0)?1:0)+((z>0)?1:0);
 
 	printf("\n\n");
 	printf("Average waiting time and Turn around time after implementing multi-queues\n");
-	printf("Average waiting time = %d\n",avg_wt[5]);
-	printf("Average turn around time = %d \n",avg_tat[5]);
+	printf("Average waiting time = %0.2f\n",( avg_wt[5]+avg_wt[6]+avg_wt[7] )/active_count);
+	printf("Average turn around time = %0.2f \n",(avg_tat[5]+avg_tat[6]+avg_tat[7])/active_count);
 
 }
 
@@ -689,6 +605,11 @@ void runMyTestCase(int *n)
 {
 	//*n = 5;
 	//int test[5][7] = { {0,0,5,0,0,0,0},{0,1,3,0,0,0,0},{0,2,1,0,0,0,0},{0,3,2,0,0,0,0},{0,4,3,0,0,0,0} };
+
+
+	//*n = 6;
+	//int test[6][7] = { {0,0,4,0,0,0,10},{0,1,5,0,0,0,8},{0,2,2,0,0,0,6},{0,3,1,0,0,0,2},
+	//	{0,4,6,0,0,0,4},{0,6,3,0,0,0,0} };
 
 
 	*n = 7;
@@ -734,10 +655,9 @@ int main(int argc, char *argv[])
 
 
 		printf("\nThe Process List are as follows :-\n");
-		printf("PID\tArrival\tBurst\tWait\tTAT\tCT \tPriority \n");
 		display(processes,n);
 
-		printf("\nEnter 0 : FIFO 						Scheduling\n");
+		printf("\nEnter 0 : FCFS 						Scheduling\n");
 		printf("Enter 1 : SJF NON-PREEMPT				Scheduling\n");
 		printf("Enter 2 : SJF PREEMPTIVE				Scheduling\n");
 		printf("Enter 3 : RR   						Scheduling\n");
@@ -757,7 +677,7 @@ int main(int argc, char *argv[])
 		switch(cmdfound){
 		case 0:
 		{
-			ff(processes, n);
+			performFCFS(processes, n);
 			display(processes, n);
 			gantt(processes,n);
 			calAvg(processes, n, 0);
@@ -765,36 +685,43 @@ int main(int argc, char *argv[])
 		break;
 		case 1:
 		{
-			sjf_No_Preempt(processes, n);
+			performSJF_NON_PREEMPT(processes, n);
 			display(processes, n);
 			calAvg(processes, n, 1);
 		}
 		break;
 		case 2:
 		{
-			sjf_Preempt(processes, n);
+			performSJF_PREEMPT(processes, n);
 			display(processes, n);
 			calAvg(processes, n, 1);
 		}
 		break;
 		case 3:
 		{
-			rr(processes,n);
+
+			int quant= 0;
+			printf("Enter the quantum\n");
+			scanf("%d", &quant);
+			if(quant<=0)
+			{
+				printf("Heyaaa!!!! Dont play with time slice..Ohkay I will assign instead a better choice ..Assigned quant = 2\n\n");
+				quant = 2;
+			}
+
+			performRR(processes,n,quant);
 			display(processes, n);
 			calAvg(processes, n, 2);
 		}
 		break;
-		case 4:
-		case 5:
-		case 6:
-		case 7:
+		case 4 ... 7:
 		{
-			priority(processes ,n,cmdfound-4);
+			performPRIORITY(processes ,n,cmdfound-4);
 		}
 		break;
 		case 8:
 		{
-			multi(mlq, n);
+			performMULTI_LEVEL_QUEUE(processes, n);
 		}
 
 		break;
