@@ -61,6 +61,55 @@ void calAvg(int processes[][7],int n, int a ){
 	printf("Average turn around time = %f \n",avg_tat[a]);
 }
 
+void gantt(int ps[][7],int n){
+	printf("****************The Gantt Chart****************\n");
+	printf(" ");
+	for(int i=0;i<n; i++){
+		for(int j=0; j<ps[i][bst]; j++){ //printing the top line
+			printf("--");
+		}
+		printf(" ");
+	}
+	printf("\n");
+	//for printing the middle line
+	printf("|");
+	for(int i=0;i<n; i++){
+		for(int j=0; j<ps[i][bst]-1; j++){
+			printf(" ");
+		}
+		printf("P%d",ps[i][pid]);
+		for(int j=0; j<ps[i][bst]-1; j++){
+			printf(" ");
+		}
+		printf("|");
+	}
+	//for printing bottom line
+	printf("\n");
+	printf(" ");
+	for(int i=0;i<n; i++){
+		for(int j=0; j<ps[i][bst]; j++){
+			printf("--");
+		}
+		printf(" ");
+	}
+	//for printing the timeline
+	printf("\n");
+	printf("0");
+	for(int i=0;i<n; i++){
+		for(int j=0; j<ps[i][bst]; j++){
+			printf("  ");
+		}
+		if(ps[i][ct]<10)
+			printf("%d",ps[i][ct]);
+
+		else{
+			printf("%d",ps[i][ct]);
+
+		}
+	}
+	printf("\n");
+}
+
 void ff( int ps[][7], int n)
 {
 	ps[0][wt]=0;
@@ -86,7 +135,7 @@ void ff( int ps[][7], int n)
 	}
 
 	//Display processes along with all details
-	printf("\n****************Gantt chart after FIFO******************\n");
+	printf("\n****************Scheduling Parameters after FIFO******************\n");
 	printf("\n\n----------------------------------------------\n");
 	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \tPriority \n");
 	printf("\n----------------------------------------------\n");
@@ -171,7 +220,7 @@ void sjf_No_Preempt(int ps[][7], int n)
 
 
 
-	printf("\n******************Gantt chart after SJF Non Preemptive ******************\n");
+	printf("\n******************Scheduling Parameters after SJF Non Preemptive ******************\n");
 	printf("\n\n----------------------------------------------\n");
 	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
 	printf("\n----------------------------------------------\n");
@@ -234,58 +283,11 @@ void sjf_Preempt(int ps[][7], int n)
 	}
 
 
-	printf("\n******************Gantt chart after SJF Preemptive ******************\n");
+	printf("\n******************Scheduling Parameters after SJF Preemptive ******************\n");
 
 	printf("\n\n----------------------------------------------\n");
 	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
 	printf("\n----------------------------------------------\n");
-
-}
-
-void sjf(int processes[][7], int n)
-{// arranging data as per the burst time
-	for(int i=0; i<n;i++)
-	{
-		for(int j=i+1; j<n; j++)
-		{
-			if(processes[i][1]==processes[j][1])
-			{
-				if(processes[i][2]>processes[j][2])
-				{
-					for(int k=0; k<7; k++)
-					{
-						change(&processes[i][k],&processes[j][k]);
-					}
-				}
-			}
-		}
-
-		if(i==0)
-		{
-			processes[i][3]=0;//wt
-			processes[i][4]=processes[i][2];//tat
-			processes[i][5]=processes[i][1]+processes[i][2]+processes[i][3];//ct
-		}
-		else
-		{
-			if(processes[i-1][5]<processes[i][1])
-				processes[i][5]=processes[i][1]+processes[i][2];
-			else
-				processes[i][5]=processes[i-1][5]+processes[i][2];
-
-			processes[i][4]=processes[i][5]-processes[i][1];
-
-			processes[i][3]=processes[i][4]-processes[i][2];//wt
-
-			if(processes[i][3]<0)
-				processes[i][3]=0;
-		}
-	}
-	printf("\n**********************************Gantt chart after SJF********************************\n");
-
-	printf("\n\n----------------------------------------------\n");
-	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-	printf("\n\n----------------------------------------------\n");
 
 }
 
@@ -339,9 +341,7 @@ unsigned char Q_EMPTY()
 
 void rr(int ps[][7], int n){
 
-	int quant= 0, sum=0;
-	int times[n];// array of burst time to keep a track
-	int x=0;
+	int quant= 0;
 	printf("Enter the quantum\n");
 	scanf("%d", &quant);
 
@@ -418,163 +418,205 @@ void rr(int ps[][7], int n){
 }
 
 /*
-void rr(int processes[][7], int n){
-	int quant= 0, sum=0;
-	int times[n];// array of burst time to keep a track
-	int x=0;
-	printf("Enter the quantum\n");
-	scanf("%d", &quant);
-	for(int i=0; i<n; i++){
-		sum += processes[i][2];
-		times[i]= processes[i][2]; // maintaining an array of burst time
-		processes[i][1]=0;
-	}
+int queue[100],front=0,rear=0,size=100;
 
-	while(sum !=x ){
-		for(int i= 0; i<n;i++){
-			if(times[i]> quant){ //burst time is greater then quantum
-				times[i]-=quant;
-				processes[i][5]=x+ quant;
-				x +=quant;
-
-			}
-			else if (times[i]==0){
-				printf("\n");
-			}
-
-			else{
-				processes[i][5]= x + times[i];
-				x +=times[i];
-				times[i]=0;
-
-			}
-		}
-	}
-	for(int i=0; i<n;i++){
-		processes[i][4]= processes[i][5];
-		processes[i][3]=processes[i][5]- processes[i][2];
-	}
-	printf("\n**************************Gantt chart after Round-Robin************************\n");
-
-	printf("\n\n----------------------------------------------\n");
-	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-	printf("\n\n----------------------------------------------\n");
-
-
-} */
-void pnp(int processes[][7], int n){
-	//arranging Data as per its priority
-	for(int i=0; i<n;i++)
+void Q_PUSH(int data)
+{
+	if(rear==size)
 	{
-		for(int j=i+1; j<n; j++)
+		//printf("\n Queue is Full");
+
+	}
+	else
+	{
+		queue[rear++] = data;
+	}
+}
+
+int Q_FRONT()
+{
+	return queue[front];
+}
+
+void Q_POP()
+{
+	if(front==rear)
+	{
+
+		//printf("\n Queue is Empty");
+	}
+	else
+	{
+		front++;
+		size++;
+	}
+}
+
+void Q_DISPLAY()
+{
+	printf("\n");
+	for(int i = front;i<rear;i++)
+		printf("%d ",queue[i]);
+	printf("\n");
+}
+
+unsigned char Q_EMPTY()
+{
+	return (front==rear);
+}
+ */
+
+
+void pnp(int ps[][7], int n){
+	int completed = 0;
+	int current_time = 0;
+	int  is_completed[100] = {0};
+
+	while(completed != n)
+	{
+		int ps_id = -1;
+		int mn = INT_MAX;
+		for(int i = 0; i < n; i++)
 		{
-			if(processes[i][1]==processes[j][1])
+			if(ps[i][arr] <= current_time && is_completed[i] == 0)
 			{
-				if(processes[i][6]>processes[j][6])
+				if(ps[i][prior] < mn)
 				{
-					for(int k=0; k<7; k++)
+					mn = ps[i][prior];
+					ps_id = i;
+				}
+				else if(ps[i][prior] == mn)
+				{
+					if(ps[i][arr] < ps[ps_id][arr])
 					{
-						change(&processes[i][k],&processes[j][k]);
+						mn = ps[i][prior];
+						ps_id = i;
 					}
 				}
 			}
 		}
-		if(i==0)// computing stats for the first process in the ready queue
+		if(ps_id != -1)
 		{
-			processes[i][3]=0;//wt
-			processes[i][4]=processes[i][2];//tat
-			processes[i][5]=processes[i][1]+processes[i][2]+processes[i][3];//ct
+			ps[ps_id][ct]  = current_time + ps[ps_id][bst];
+			ps[ps_id][tat] = ps[ps_id][ct] - ps[ps_id][arr];
+			ps[ps_id][wt]  = ps[ps_id][tat] - ps[ps_id][bst];
+			is_completed[ps_id] = 1;
+			completed++;
+			current_time = ps[ps_id][ct];
+
 		}
 		else
-		{
-			if(processes[i-1][5]<processes[i][1]) // checking whether next processes arrives after the completion of the previous process
-				processes[i][5]=processes[i][1]+processes[i][2];
-			else
-				processes[i][5]=processes[i-1][5]+processes[i][2];
-
-			processes[i][4]=processes[i][5]-processes[i][1];
-
-			processes[i][3]=processes[i][4]-processes[i][2];//wt
-
-			if(processes[i][3]<0)
-				processes[i][3]=0;
-		}
+		{ current_time++; }
 	}
-	printf("\n**********************************Gantt chart after Priority Scheduling without Preemption********************************\n");
+
+
+
+
+	printf("\n******************Process Parameters after Priority Non Preemptive ******************\n");
 	printf("\n\n----------------------------------------------\n");
 	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
-	printf("\n\n----------------------------------------------\n");
-	display(prior, n);
-	calAvg(prior, n, 3);
+	printf("\n----------------------------------------------\n");
+
+	display(processes, n);
+	calAvg(processes, n, 3);
 }
 // priority with preemption
-/*void pp(int processes[][7],int n){
-	int timer =1;
-	for(int i=0; i<n-1;i++)
-	{for(int j=i+1; j<n;j++){
-		if(processes[i][1]==processes[j][1]){ // if arrival time is same then arrange as per the priority
-			if(processes[i][6]==processes[j][6]){
-				for(int k=0; k<7; k++)
+void pp(int ps[][7],int n){
+	int current_time = 0;
+	int completed = 0;
+	int is_completed[100] = {0};
+	int burstRemain[100]={0};
+
+	for(int i = 0 ;i <n ;i++)
+		burstRemain[i] = ps[i][bst];
+
+
+
+	while(completed != n)
+	{
+		int ps_id = -1;
+		int mn = 10000000;
+		for(int i = 0; i < n; i++)
+		{
+			if(ps[i][arr] <= current_time && is_completed[i] == 0)// to find the least priority amongst all the visited processes
+			{
+				if(ps[i][prior] < mn)
 				{
-					change(&processes[i][k],&processes[j][k]);
+					mn = ps[i][prior];
+					ps_id = i;
+				}
+				if(ps[i][prior] == mn)
+				{
+					if(ps[i][arr] < ps[ps_id][arr])
+					{
+						mn = ps[i][prior];
+						ps_id = i;
+					}
 				}
 			}
 		}
-	}
-	}
-	int turn[n];
-	for(int i=0;i<n;i++){
-		turn[i]= processes[i][1];
-	}
-	while(turn!=0)
-	for(int i=0; i<n; i++)
-	{ int low= processes[0][6];
-			if(processes[i][1] <= timer && low> processes[i][6]){
-			processes[turn[i]][2]-=timer;
-			= i;
-			timer++;
-		}
-		else{
-			timer++;
-		}
-	}
-display(priorp, n);
-calAvg(priorp, n, 4);
-}*/
-void priority(int processes[][7],int procp[][7],int n){
+		if(ps_id != -1)
+		{
+			burstRemain[ps_id] -= 1;
+			current_time++;
+			if(burstRemain[ps_id] == 0)
 
-	char a,z;
-	printf("Press Y for Internal Priority else N for External Priority");
-	scanf("%c",&a);
-	if(a=='Y' || a=='y'){
+			{
+				ps[ps_id][ct] = current_time;
+				ps[ps_id][tat] = ps[ps_id][ct] - ps[ps_id][arr];
+				ps[ps_id][wt] = ps[ps_id][tat] - ps[ps_id][bst];
+				is_completed[ps_id] = 1;
+				completed++;
+			}
+		}
+		else
+		{
+			current_time++;
+		}
+	}
+	printf("\n******************Process Parameters after Priority with Preemption ******************\n");
+	printf("\n\n----------------------------------------------\n");
+	printf("PID\tArrival\tBurst\t Wait\t TAT\t CT \t Priority\n");
+	printf("\n----------------------------------------------\n");
+	display(processes, n);
+	calAvg(processes, n, 4);
+}
+void priority(int processes[][7],int n,int option){
+
+	if(option == 0) // Internal Priority with Preemption
+	{
 		for(int i=0; i<n;i++){
 			processes[i][6]=(rand() % 4)+2;
 		}
+
+		pp(processes,n);
 	}
-	else if(a=='N' || a=='n'){
+	else if(option == 1) // Internal Priority without Preemption
+	{
+		for(int i=0; i<n;i++){
+			processes[i][6]=(rand() % 4)+2;
+		}
+		pnp(processes,n);
+	}
+	else if(option == 2) // External Priority with Preemption
+	{
 		printf("Kindly enter the priority of each process: 0 is the highest priority");
 		for(int i=0; i<n;i++){
 			scanf("%d",&processes[i][6]);
 		}
+		pp(processes,n);
 	}
-	else{
-		printf("Wrong Entry");}
-
-	printf("Press Y for Priority with Preemption else N for Non preemption");
-	scanf(" %c", &z);
-	printf("input: %c",z);
-	if(z =='Y' || z =='y'){
-		printf("Priority with Preemption Started");
-		//pp(procp,n);
+	else if(option == 3) // External Priority without Preemption
+	{
+		printf("Kindly enter the priority of each process: 0 is the highest priority");
+		for(int i=0; i<n;i++){
+			scanf("%d",&processes[i][6]);
+		}
+		pnp(processes,n);
 	}
-	else if(z =='N' || z=='n'){
-		printf("Priority without Preemption Started");
-		pnp(processes,n);}
-	else{
-		printf("Wrong Entry");}
 
-	display(processes,n);
-	calAvg(processes, n, 3);
+	//display(processes,n);
+	//calAvg(processes, n, 3);
 }
 
 void multi(int processes[][7], int n){
@@ -659,7 +701,7 @@ void multi(int processes[][7], int n){
 		printf("First queue is empty\n");
 	if (y != 0){
 		printf("Processing  the second queue\n");
-		sjf(q2,y);
+		sjf_No_Preempt(q2,y);
 		display(q2, y);
 		calAvg(q2, y, 6);}
 	else
@@ -719,9 +761,7 @@ int main(int argc, char *argv[])
 		processes[i][prior]=0;
 	}
 
-	runMyTestCase(&n);  // This is custome driver commented by monika
-
-	// This is my comment nitish
+	runMyTestCase(&n);
 	rearrange(processes,n); // arranging data as per the arrival time
 
 	char ch = 'Y';
@@ -734,14 +774,17 @@ int main(int argc, char *argv[])
 		printf("PID\tArrival\tBurst\tWait\tTAT\tCT \tPriority \n");
 		display(processes,n);
 
-		printf("\nEnter 0 : FIFO 				Scheduling\n");
-		printf("Enter 1 : SJF NON-PREEMPT		Scheduling\n");
-		printf("Enter 2 : SJF PREEMPTIVE		Scheduling\n");
-		printf("Enter 3 : RR   				Scheduling\n");
-		printf("Enter 4 : PRIORITY BASED		Scheduling\n");
-		printf("Enter 5 : MULTI LEVEL Q 		Scheduling\n");
-		printf("Enter 6 : MULTI LEVEL Q FEEDBACK 	Scheduling\n");
-		printf("Enter 7 : LINUX SCHEDULER 		Scheduling\n");
+		printf("\nEnter 0 : FIFO 						Scheduling\n");
+		printf("Enter 1 : SJF NON-PREEMPT				Scheduling\n");
+		printf("Enter 2 : SJF PREEMPTIVE				Scheduling\n");
+		printf("Enter 3 : RR   						Scheduling\n");
+		printf("Enter 4 : PRIORITY BASED INTERNAL PREEMPTIVE		Scheduling\n");
+		printf("Enter 5 : PRIORITY BASED INTERNAL NON-PREEMPT		Scheduling\n");
+		printf("Enter 6 : PRIORITY BASED EXTERNAL PREEMPTIVE		Scheduling\n");
+		printf("Enter 7 : PRIORITY BASED EXTERNAL NON-PREEMPT		Scheduling\n");
+		printf("Enter 8 : MULTI LEVEL Q 				Scheduling\n");
+		printf("Enter 9 : MULTI LEVEL Q FEEDBACK 			Scheduling\n");
+		printf("Enter 10 : LINUX SCHEDULER 				Scheduling\n");
 
 
 
@@ -753,6 +796,7 @@ int main(int argc, char *argv[])
 		{
 			ff(processes, n);
 			display(processes, n);
+			gantt(processes,n);
 			calAvg(processes, n, 0);
 		}
 		break;
@@ -778,11 +822,14 @@ int main(int argc, char *argv[])
 		}
 		break;
 		case 4:
+		case 5:
+		case 6:
+		case 7:
 		{
-			priority(processes,priorp ,n);
+			priority(processes ,n,cmdfound-4);
 		}
 		break;
-		case 5:
+		case 8:
 		{
 			multi(mlq, n);
 		}
