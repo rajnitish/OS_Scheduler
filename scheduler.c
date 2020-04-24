@@ -27,6 +27,8 @@ int q1[M][7];
 int q2[M][7];
 int q3[M][7];
 
+#define RUN_MY_TESTCASE
+
 enum param{pid,arr,bst,wt,tat,ct,prior};
 
 double avg_wt[8] ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}, avg_tat[8] ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
@@ -348,7 +350,6 @@ void rr(int ps[][7], int n){
 
 	int current_time = 0;
 	int completed = 0;
-	int is_completed[100] = {0};
 	int burstRemain[100];
 
 	for(int i = 0 ;i <n ;i++)
@@ -416,56 +417,6 @@ void rr(int ps[][7], int n){
 
 
 }
-
-/*
-int queue[100],front=0,rear=0,size=100;
-
-void Q_PUSH(int data)
-{
-	if(rear==size)
-	{
-		//printf("\n Queue is Full");
-
-	}
-	else
-	{
-		queue[rear++] = data;
-	}
-}
-
-int Q_FRONT()
-{
-	return queue[front];
-}
-
-void Q_POP()
-{
-	if(front==rear)
-	{
-
-		//printf("\n Queue is Empty");
-	}
-	else
-	{
-		front++;
-		size++;
-	}
-}
-
-void Q_DISPLAY()
-{
-	printf("\n");
-	for(int i = front;i<rear;i++)
-		printf("%d ",queue[i]);
-	printf("\n");
-}
-
-unsigned char Q_EMPTY()
-{
-	return (front==rear);
-}
- */
-
 
 void pnp(int ps[][7], int n){
 	int completed = 0;
@@ -585,23 +536,30 @@ void priority(int processes[][7],int n,int option){
 
 	if(option == 0) // Internal Priority with Preemption
 	{
+
+#ifndef RUN_MY_TESTCASE
 		for(int i=0; i<n;i++){
 			processes[i][6]=(rand() % 4)+2;
 		}
+#endif
 
 		pp(processes,n);
 	}
 	else if(option == 1) // Internal Priority without Preemption
 	{
+
+#ifndef RUN_MY_TESTCASE
 		for(int i=0; i<n;i++){
 			processes[i][6]=(rand() % 4)+2;
 		}
+#endif
 		pnp(processes,n);
 	}
 	else if(option == 2) // External Priority with Preemption
 	{
 		printf("Kindly enter the priority of each process: 0 is the highest priority");
 		for(int i=0; i<n;i++){
+			printf("Enter priority for Process P%d\t",i+1);
 			scanf("%d",&processes[i][6]);
 		}
 		pp(processes,n);
@@ -610,6 +568,7 @@ void priority(int processes[][7],int n,int option){
 	{
 		printf("Kindly enter the priority of each process: 0 is the highest priority");
 		for(int i=0; i<n;i++){
+			printf("Enter priority for Process P%d\t",i+1);
 			scanf("%d",&processes[i][6]);
 		}
 		pnp(processes,n);
@@ -732,8 +691,9 @@ void runMyTestCase(int *n)
 	//int test[5][7] = { {0,0,5,0,0,0,0},{0,1,3,0,0,0,0},{0,2,1,0,0,0,0},{0,3,2,0,0,0,0},{0,4,3,0,0,0,0} };
 
 
-	*n = 6;
-	int test[6][7] = { {0,0,4,0,0,0,0},{0,1,5,0,0,0,0},{0,2,2,0,0,0,0},{0,3,1,0,0,0,0},{0,4,6,0,0,0,0},{0,6,3,0,0,0,0} };
+	*n = 7;
+	int test[7][7] = { {0,0,4,0,0,0,10},{0,1,2,0,0,0,8},{0,2,3,0,0,0,6},{0,3,5,0,0,0,2},
+			{0,4,1,0,0,0,4},{0,5,4,0,0,0,0},{0,6,6,0,0,0,3} };
 
 
 	for(int i = 0;i<*n;i++)
@@ -761,7 +721,10 @@ int main(int argc, char *argv[])
 		processes[i][prior]=0;
 	}
 
+#ifdef RUN_MY_TESTCASE
 	runMyTestCase(&n);
+#endif
+
 	rearrange(processes,n); // arranging data as per the arrival time
 
 	char ch = 'Y';
