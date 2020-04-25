@@ -602,6 +602,142 @@ void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
 
 }
 
+void performMULTI_LEVEL_FEEDBACK_QUEUE(int processes[][7], int n){
+	printf("Dividing the processes in 3 levels of queue based upon priority \n");
+	printf("[0 - 2] Upper Level (First to serve)  [3 - 5] Mid Level (Next to serve) [Above 6] Last Level\n ");
+
+#ifndef RUN_MY_TESTCASE
+	for(int i=0; i<n;i++){
+		processes[i][6]=(rand() % 7); // randomly assigning the priorities
+	}
+#endif
+
+	int q1[n][7], q2[n][7], q3[n][7];
+	int x=0,y=0,z=0,q;
+	// switch case to assign different queues to each process as per it priority i.e 0-2  assign to q1 and so on..
+
+	for(int i=0;i<n;i++)
+	{
+		q = processes[i][6];
+
+		switch(q)
+		{
+		case 0 ... 2:
+		if(processes[i][bst]<=4)
+		for(int k=0;k<7;k++)
+		{
+			q1[x][k]=processes[i][k];
+		}
+		else{
+			processes[i][bst]=processes[i][bst]-4;
+			for(int k=0;k<7;k++)
+					{
+						q1[x][k]=processes[i][k];
+					}
+			q1[x][bst]=4;
+			processes[i][prior]=3;
+			for(int k=0;k<7;k++)
+					{
+						processes[n][k]=processes[i][k];
+					}
+			n=n+1;
+		}
+		x++;
+		break;
+		case 3 ... 5:
+		if(processes[i][bst]<=8)
+		for(int k=0;k<7;k++)
+		{
+			q2[y][k]=processes[i][k];
+		}
+		else{
+					processes[i][bst]=processes[i][bst]-8;
+					for(int k=0;k<7;k++)
+							{
+								q2[y][k]=processes[i][k];
+							}
+					q2[y][bst]=8;
+					processes[i][prior]=6;
+					for(int k=0;k<7;k++)
+							{
+								processes[n][k]=processes[i][k];
+							}
+					n=n+1;
+				}
+		y++;
+		break;
+		default :
+			for(int k=0;k<7;k++)
+			{
+				q3[z][k]=processes[i][k];
+			}
+			z++;
+			break;
+		}
+	}
+
+
+
+/******** Queues Displaying Levels********/
+	printf("\nPID\tArrival\tBurst\tWait \tTAT \tCT  \tPriority \n");
+	printf("---\t-------\t-----\t---- \t--- \t--  \t-------- \n");
+	if(x == 0) printf("   NO PROCESS IN UPPER LEVEL QUEUE    \n");
+	for(int i= 0; i< x;i++){
+		for (int k=0; k<7; k++)
+			printf("%d \t", q1[i][k]);
+	printf("\n"); }
+	printf("---------------------------------------------------------\n");
+
+	if(y == 0) printf("    NO PROCESS IN MID LEVEL QUEUE     \n");
+	for(int i= 0; i< y;i++){
+		for (int k=0; k<7; k++)
+			printf("%d \t", q2[i][k]);
+	printf("\n");}
+	printf("---------------------------------------------------------\n");
+	if(z == 0) printf("   NO PROCESS IN LAST LEVEL QUEUE    \n");
+	for(int i= 0; i< z;i++){
+		for (int k=0; k<7; k++)
+			printf("%d \t", q3[i][k]);
+	printf("\n");}
+	printf("---------------------------------------------------------\n");
+
+	if(x !=0)// checking if the queue is not empty
+		{
+			printf("\nProcessing the first queue\n");
+			performRR(q1,x,4);
+			display(q1, x);
+			calAvg(q1, x, 5);
+		}
+		else
+			printf("\nFirst queue is empty\n");
+
+		if (y != 0)
+		{
+			printf("\nProcessing  the second queue\n");
+			performRR(q2,y,8);
+			display(q2, y);
+			calAvg(q2, y, 6);
+		}
+		else
+			printf("\nSecond queue is empty\n");
+
+		if(z!=0)
+		{
+			printf("\nProcessing  the third queue\n");
+			performFCFS(q3,z);
+			display(q3, z);
+			calAvg(q3, z, 7);
+		}
+		else
+			printf("\nThird queue is empty\n");
+
+		int active_count = ((x>0)?1:0)+((y>0)?1:0)+((z>0)?1:0);
+
+		printf("\n\n");
+		printf("Average waiting time and Turn around time after implementing multi-queues\n");
+		printf("Average waiting time = %0.2f\n",( avg_wt[5]+avg_wt[6]+avg_wt[7] )/active_count);
+		printf("Average turn around time = %0.2f \n",(avg_tat[5]+avg_tat[6]+avg_tat[7])/active_count);
+}
 
 void runMyTestCase(int *n)
 {
@@ -615,8 +751,8 @@ void runMyTestCase(int *n)
 
 
 	*n = 7;
-	int test[7][7] = { {0,0,4,0,0,0,10},{0,1,2,0,0,0,8},{0,2,3,0,0,0,6},{0,3,5,0,0,0,2},
-			{0,4,1,0,0,0,4},{0,5,4,0,0,0,0},{0,6,6,0,0,0,3} };
+	int test[7][7] = { {0,0,4,0,0,0,10},{0,1,2,0,0,0,3},{0,2,3,0,0,0,6},{0,3,5,0,0,0,2},
+			{0,4,1,0,0,0,4},{0,5,4,0,0,0,0},{0,6,10,0,0,0,3}};
 
 
 	for(int i = 0;i<*n;i++)
@@ -725,8 +861,11 @@ int main(int argc, char *argv[])
 		{
 			performMULTI_LEVEL_QUEUE(processes, n);
 		}
-
 		break;
+		case 9:
+		{
+			performMULTI_LEVEL_FEEDBACK_QUEUE(processes, n);
+		}
 		}
 
 
