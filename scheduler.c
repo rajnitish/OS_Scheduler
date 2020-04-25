@@ -602,6 +602,17 @@ void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
 
 }
 
+
+void updateTransposedProcess(int *q1,int x,int *q2,int y)
+{
+	for(int i=0;i<x;i++){
+		for(int j=0;j<y;j++){
+			if(*(q1+i*7 +pid) ==*(q2+j*7 +pid)){
+				*(q2+j*7 +arr)= *(q1+i*7 +ct);
+			}
+		}
+	}
+}
 void performMULTI_LEVEL_FEEDBACK_QUEUE(int processes[][7], int n){
 	printf("Dividing the processes in 3 levels of queue based upon priority \n");
 	printf("[0 - 2] Upper Level (First to serve)  [3 - 5] Mid Level (Next to serve) [Above 6] Last Level\n ");
@@ -714,6 +725,7 @@ void performMULTI_LEVEL_FEEDBACK_QUEUE(int processes[][7], int n){
 		if (y != 0)
 		{
 			printf("\nProcessing  the second queue\n");
+			updateTransposedProcess((int *)q1,x,(int *)q2,y);
 			performRR(q2,y,8);
 			display(q2, y);
 			calAvg(q2, y, 6);
@@ -724,6 +736,7 @@ void performMULTI_LEVEL_FEEDBACK_QUEUE(int processes[][7], int n){
 		if(z!=0)
 		{
 			printf("\nProcessing  the third queue\n");
+			updateTransposedProcess((int *)q2,y,(int *)q3,z);
 			performFCFS(q3,z);
 			display(q3, z);
 			calAvg(q3, z, 7);
