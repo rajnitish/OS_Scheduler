@@ -392,6 +392,7 @@ void performPRIORITY_NON_PREEMPT(int ps[][7], int n){
 
 	printf("\n*********Process Parameters after Priority Non Preemptive ********\n");
 	display(processes, n);
+	gantt(processes,n);
 	calAvg(processes, n, 4);
 }
 // priority with preemption
@@ -585,6 +586,7 @@ void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
 		printf("\nProcessing  the second queue\n");
 		performSJF_NON_PREEMPT(q2,y);
 		display(q2, y);
+		gantt(q2,y);
 		calAvg(q2, y, 7);
 	}
 	else
@@ -595,6 +597,7 @@ void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
 		printf("\nProcessing  the third queue\n");
 		performFCFS(q3,z);
 		display(q3, z);
+		gantt(q3,z);
 		calAvg(q3, z, 8);
 	}
 	else
@@ -746,6 +749,7 @@ void performMULTI_LEVEL_FEEDBACK_QUEUE(int processes[][7], int n){
 		printf("\nProcessing  the third queue\n");
 		updateTransposedProcess((int *)q2,y,(int *)q3,z);
 		performFCFS(q3,z);
+		gantt(q3,z);
 		display(q3, z);
 		calAvg(q3, z, 9);
 	}
@@ -894,6 +898,7 @@ int main(int argc, char *argv[])
 		{
 			performSJF_NON_PREEMPT(processes, n);
 			display(processes, n);
+			gantt(processes,n);
 			calAvg(processes, n, 1);
 		}
 		break;
