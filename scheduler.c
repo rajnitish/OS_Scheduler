@@ -49,6 +49,7 @@ void display(int processes[][7],int n)
 }
 // Calculate total waiting time and total turn around time
 void calAvg(int processes[][7],int n, int a ){
+	if(n<=0) return;
 	int total_wt=0, total_tat=0;
 	for (int i=0; i<n; i++)
 	{
@@ -539,29 +540,29 @@ void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
 
 
 
-/******** Queues Displaying Levels********/
+	/******** Queues Displaying Levels********/
 	printf("\nPID\tArrival\tBurst\tWait \tTAT \tCT  \tPriority \n");
 	printf("---\t-------\t-----\t---- \t--- \t--  \t-------- \n");
 	if(x == 0) printf("   NO PROCESS IN UPPER LEVEL QUEUE    \n");
 	for(int i= 0; i< x;i++){
 		for (int k=0; k<7; k++)
 			printf("%d \t", q1[i][k]);
-	printf("\n"); }
+		printf("\n"); }
 	printf("---------------------------------------------------------\n");
 
 	if(y == 0) printf("    NO PROCESS IN MID LEVEL QUEUE     \n");
 	for(int i= 0; i< y;i++){
 		for (int k=0; k<7; k++)
 			printf("%d \t", q2[i][k]);
-	printf("\n");}
+		printf("\n");}
 	printf("---------------------------------------------------------\n");
 	if(z == 0) printf("   NO PROCESS IN LAST LEVEL QUEUE    \n");
 	for(int i= 0; i< z;i++){
 		for (int k=0; k<7; k++)
 			printf("%d \t", q3[i][k]);
-	printf("\n");}
+		printf("\n");}
 	printf("---------------------------------------------------------\n");
-/***************************************/
+	/***************************************/
 
 
 	if(x !=0)// checking if the queue is not empty
@@ -595,8 +596,8 @@ void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
 		printf("\nThird queue is empty\n");
 
 	int active_count = ((x>0)?1:0)+((y>0)?1:0)+((z>0)?1:0);
-avg_wt[6]=( avg_wt[6]+avg_wt[7]+avg_wt[8] )/active_count;
-avg_tat[6]=(avg_tat[6]+avg_tat[7]+avg_tat[8])/active_count;
+	avg_wt[6]=( avg_wt[6]+avg_wt[7]+avg_wt[8] )/active_count;
+	avg_tat[6]=(avg_tat[6]+avg_tat[7]+avg_tat[8])/active_count;
 	printf("\n\n");
 	printf("Average waiting time and Turn around time after implementing multi-queues\n");
 	printf("Average waiting time = %0.2f\n",avg_wt[6]);
@@ -637,46 +638,46 @@ void performMULTI_LEVEL_FEEDBACK_QUEUE(int processes[][7], int n){
 		{
 		case 0 ... 2:
 		if(processes[i][bst]<=4)
-		for(int k=0;k<7;k++)
-		{
-			q1[x][k]=processes[i][k];
-		}
+			for(int k=0;k<7;k++)
+			{
+				q1[x][k]=processes[i][k];
+			}
 		else{
 			processes[i][bst]=processes[i][bst]-4;
 			for(int k=0;k<7;k++)
-					{
-						q1[x][k]=processes[i][k];
-					}
+			{
+				q1[x][k]=processes[i][k];
+			}
 			q1[x][bst]=4;
 			processes[i][prior]=3;
 			for(int k=0;k<7;k++)
-					{
-						processes[n][k]=processes[i][k];
-					}
+			{
+				processes[n][k]=processes[i][k];
+			}
 			n=n+1;
 		}
 		x++;
 		break;
 		case 3 ... 5:
 		if(processes[i][bst]<=8)
-		for(int k=0;k<7;k++)
-		{
-			q2[y][k]=processes[i][k];
-		}
+			for(int k=0;k<7;k++)
+			{
+				q2[y][k]=processes[i][k];
+			}
 		else{
-					processes[i][bst]=processes[i][bst]-8;
-					for(int k=0;k<7;k++)
-							{
-								q2[y][k]=processes[i][k];
-							}
-					q2[y][bst]=8;
-					processes[i][prior]=6;
-					for(int k=0;k<7;k++)
-							{
-								processes[n][k]=processes[i][k];
-							}
-					n=n+1;
-				}
+			processes[i][bst]=processes[i][bst]-8;
+			for(int k=0;k<7;k++)
+			{
+				q2[y][k]=processes[i][k];
+			}
+			q2[y][bst]=8;
+			processes[i][prior]=6;
+			for(int k=0;k<7;k++)
+			{
+				processes[n][k]=processes[i][k];
+			}
+			n=n+1;
+		}
 		y++;
 		break;
 		default :
@@ -691,112 +692,115 @@ void performMULTI_LEVEL_FEEDBACK_QUEUE(int processes[][7], int n){
 
 
 
-/******** Queues Displaying Levels********/
+	/******** Queues Displaying Levels********/
 	printf("\nPID\tArrival\tBurst\tWait \tTAT \tCT  \tPriority \n");
 	printf("---\t-------\t-----\t---- \t--- \t--  \t-------- \n");
 	if(x == 0) printf("   NO PROCESS IN UPPER LEVEL QUEUE    \n");
 	for(int i= 0; i< x;i++){
 		for (int k=0; k<7; k++)
 			printf("%d \t", q1[i][k]);
-	printf("\n"); }
+		printf("\n"); }
 	printf("---------------------------------------------------------\n");
 
 	if(y == 0) printf("    NO PROCESS IN MID LEVEL QUEUE     \n");
 	for(int i= 0; i< y;i++){
 		for (int k=0; k<7; k++)
 			printf("%d \t", q2[i][k]);
-	printf("\n");}
+		printf("\n");}
 	printf("---------------------------------------------------------\n");
 	if(z == 0) printf("   NO PROCESS IN LAST LEVEL QUEUE    \n");
 	for(int i= 0; i< z;i++){
 		for (int k=0; k<7; k++)
 			printf("%d \t", q3[i][k]);
-	printf("\n");}
+		printf("\n");}
 	printf("---------------------------------------------------------\n");
 
 	if(x !=0)// checking if the queue is not empty
-		{
-			printf("\nProcessing the first queue\n");
-			performRR(q1,x,4);
-			display(q1, x);
-			calAvg(q1, x, 7);
-		}
-		else
-			printf("\nFirst queue is empty\n");
+	{
+		printf("\nProcessing the first queue\n");
+		performRR(q1,x,4);
+		display(q1, x);
+		calAvg(q1, x, 7);
+	}
+	else
+		printf("\nFirst queue is empty\n");
 
-		if (y != 0)
-		{
-			printf("\nProcessing  the second queue\n");
-			updateTransposedProcess((int *)q1,x,(int *)q2,y);
-			performRR(q2,y,8);
-			display(q2, y);
-			calAvg(q2, y, 8);
-		}
-		else
-			printf("\nSecond queue is empty\n");
+	if (y != 0)
+	{
+		printf("\nProcessing  the second queue\n");
+		updateTransposedProcess((int *)q1,x,(int *)q2,y);
+		performRR(q2,y,8);
+		display(q2, y);
+		calAvg(q2, y, 8);
+	}
+	else
+		printf("\nSecond queue is empty\n");
 
-		if(z!=0)
-		{
-			printf("\nProcessing  the third queue\n");
-			updateTransposedProcess((int *)q2,y,(int *)q3,z);
-			performFCFS(q3,z);
-			display(q3, z);
-			calAvg(q3, z, 9);
-		}
-		else
-			printf("\nThird queue is empty\n");
+	if(z!=0)
+	{
+		printf("\nProcessing  the third queue\n");
+		updateTransposedProcess((int *)q2,y,(int *)q3,z);
+		performFCFS(q3,z);
+		display(q3, z);
+		calAvg(q3, z, 9);
+	}
+	else
+		printf("\nThird queue is empty\n");
 
-		int active_count = ((x>0)?1:0)+((y>0)?1:0)+((z>0)?1:0);
+	int active_count = ((x>0)?1:0)+((y>0)?1:0)+((z>0)?1:0);
 
-		printf("\n\n");
-		printf("Average waiting time and Turn around time after implementing multi-queues\n");
-		avg_wt[7]=( avg_wt[9]+avg_wt[7]+avg_wt[8] )/active_count;
-		avg_tat[7]=(avg_tat[9]+avg_tat[7]+avg_tat[8])/active_count;
-		printf("Average waiting time = %0.2f\n",avg_wt[7]);
-		printf("Average turn around time = %0.2f \n",avg_tat[7]);
+	printf("\n\n");
+	printf("Average waiting time and Turn around time after implementing multi-queues\n");
+	avg_wt[7]=( avg_wt[9]+avg_wt[7]+avg_wt[8] )/active_count;
+	avg_tat[7]=(avg_tat[9]+avg_tat[7]+avg_tat[8])/active_count;
+	printf("Average waiting time = %0.2f\n",avg_wt[7]);
+	printf("Average turn around time = %0.2f \n",avg_tat[7]);
 }
 void PrintStats(){
 	printf("---------------------------------------------------------------------------------------\n");
 	printf("-------------------------------------Statistics----------------------------------------\n");
 	printf("---------------------------------------------------------------------------------------\n");
-			printf("Scheduling\t\t Average Waiting\t\t Average turn Around Time\n");
-			printf("---------------------------------------------------------------------------------------\n");
-			printf("| 0 : FCFS \t\t\t %lf \t\t\t %lf \t\t|\n",avg_wt[0],avg_tat[0]);
-			printf("---------------------------------------------------------------------------------------\n");
-			printf("| 1 : SJF \t\t\t %lf \t\t\t %lf \t\t|\n",avg_wt[1],avg_tat[1]);
-			printf("---------------------------------------------------------------------------------------\n");
-			printf("| 2 : SRTF \t\t\t %lf \t\t\t %lf \t\t|\n",avg_wt[2],avg_tat[2]);
-			printf("---------------------------------------------------------------------------------------\n");
-			printf("| 3 : RR  \t\t\t %lf \t\t\t %lf \t\t|\n",avg_wt[3],avg_tat[3]);
-			printf("---------------------------------------------------------------------------------------\n");
-			printf("| 4 : PRIORITY PREEMPTIVE \t %lf \t\t\t %lf \t\t|\n",avg_wt[4],avg_tat[4]);
-			printf("---------------------------------------------------------------------------------------\n");
-			printf("| 5 : PRIORITY NON-PREEMPT\t %lf \t\t\t %lf \t\t|\n",avg_wt[5],avg_tat[5]);
-			printf("---------------------------------------------------------------------------------------\n");
-			printf("| 6 : MULTI LEVEL Q \t\t %lf \t\t\t %lf \t\t|\n",avg_wt[6],avg_tat[6]);
-			printf("---------------------------------------------------------------------------------------\n");
-			printf("| 7 : MULTI LEVEL Q FEEDBACK\t %lf \t\t\t %lf \t\t|\n",avg_wt[7],avg_tat[7]);
-			printf("---------------------------------------------------------------------------------------\n");
-			printf("| 8 : LINUX SCHEDULER\t\t %lf \t\t\t %lf \t\t|\n",avg_wt[0],avg_tat[0]);
-			printf("---------------------------------------------------------------------------------------\n");
-int m_wt=0,m_tat=0;
-int sd_wt=0,sd_tat=0;
-for(int i=0;i<9;i++){
-	m_wt=m_wt+avg_wt[i];
-	m_tat=m_tat+avg_tat[i];
-}
-m_wt=m_wt/9;
-m_tat=m_tat/9;
-for(int i=0;i<9;i++){
-	sd_wt +=pow((avg_wt[i]-m_wt),2);
-	sd_tat +=pow((avg_tat[i]-m_tat),2);
-}
-sd_wt=sqrt(sd_wt/9);
-sd_tat=sqrt(sd_tat/9);
-printf("Mean waiting time = %0.2f\n",m_wt);
-		printf("Mean turn around time = %0.2f \n",m_tat);
-		printf("Standard Deviation of waiting time = %0.2f\n",sd_wt);
-		printf("standard Deviation of turn around time = %0.2f \n",sd_tat);
+	printf("Scheduling\t\t Average Waiting\t\t Average turn Around Time\n");
+	printf("---------------------------------------------------------------------------------------\n");
+	printf("| 0 : FCFS \t\t\t %lf \t\t\t %lf \t\t|\n",avg_wt[0],avg_tat[0]);
+	printf("---------------------------------------------------------------------------------------\n");
+	printf("| 1 : SJF \t\t\t %lf \t\t\t %lf \t\t|\n",avg_wt[1],avg_tat[1]);
+	printf("---------------------------------------------------------------------------------------\n");
+	printf("| 2 : SRTF \t\t\t %lf \t\t\t %lf \t\t|\n",avg_wt[2],avg_tat[2]);
+	printf("---------------------------------------------------------------------------------------\n");
+	printf("| 3 : RR  \t\t\t %lf \t\t\t %lf \t\t|\n",avg_wt[3],avg_tat[3]);
+	printf("---------------------------------------------------------------------------------------\n");
+	printf("| 4 : PRIORITY PREEMPTIVE \t %lf \t\t\t %lf \t\t|\n",avg_wt[4],avg_tat[4]);
+	printf("---------------------------------------------------------------------------------------\n");
+	printf("| 5 : PRIORITY NON-PREEMPT\t %lf \t\t\t %lf \t\t|\n",avg_wt[5],avg_tat[5]);
+	printf("---------------------------------------------------------------------------------------\n");
+	printf("| 6 : MULTI LEVEL Q \t\t %lf \t\t\t %lf \t\t|\n",avg_wt[6],avg_tat[6]);
+	printf("---------------------------------------------------------------------------------------\n");
+	printf("| 7 : MULTI LEVEL Q FEEDBACK\t %lf \t\t\t %lf \t\t|\n",avg_wt[7],avg_tat[7]);
+	printf("---------------------------------------------------------------------------------------\n");
+	printf("| 8 : LINUX SCHEDULER\t\t %lf \t\t\t %lf \t\t|\n",avg_wt[8],avg_tat[8]);
+	printf("---------------------------------------------------------------------------------------\n");
+	int m_wt=0,m_tat=0;
+	int sd_wt=0,sd_tat=0;
+	for(int i=0;i<9;i++)
+	{
+		m_wt   += avg_wt[i];
+		m_tat  += m_tat+avg_tat[i];
+	}
+	m_wt=m_wt/9;
+	m_tat=m_tat/9;
+	int x = pow(m_wt,2);
+	for(int i=0;i<9;i++){
+
+		sd_wt += pow((avg_wt[i]-m_wt),2);
+		sd_tat +=pow((avg_tat[i]-m_tat),2);
+	}
+	sd_wt=sqrt(sd_wt/9);
+	sd_tat=sqrt(sd_tat/9);
+	printf("Mean waiting time = %0.2f\n",m_wt);
+	printf("Mean turn around time = %0.2f \n",m_tat);
+	printf("Standard Deviation of waiting time = %0.2f\n",sd_wt);
+	printf("standard Deviation of turn around time = %0.2f \n",sd_tat);
 }
 void runMyTestCase(int *n)
 {
