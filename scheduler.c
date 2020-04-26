@@ -22,8 +22,18 @@
 #define M 100
 #define N 100
 int processes[M][7];
-int ro[M][7];
-int priorp[M][7];
+//int ro[M][7];
+//int priorp[M][7];
+
+struct GanttParam
+{
+	int pid;
+	int st;
+
+};
+
+struct GanttParam ganttChart[100];
+
 #define LARGE_BURST 1000000
 
 #define RUN_MY_TESTCASE
@@ -62,6 +72,64 @@ void calAvg(int processes[][7],int n, int a ){
 	printf("Average waiting time = %f",avg_wt[a]);
 	printf("\n");
 	printf("Average turn around time = %f \n",avg_tat[a]);
+}
+
+void createGanttChart(struct GanttParam *gt,int n){
+
+	int dur = 0;
+	printf("****************The Gantt Chart****************\n");
+	printf(" ");
+	for(int i=0;i<n; i++)
+	{
+		for(int j=0; j<(gt+i+1)->st - (gt+i)->st; j++){ //printing the top line
+			printf("--");
+		}
+		printf("  ");
+	}
+	printf("\n");
+
+
+	//for printing the middle line
+	printf("| ");
+	for(int i=0;i<n; i++){
+
+		for(int j=0; j<(gt+i+1)->st - (gt+i)->st -2; j = j+2)
+		{
+			printf("  ");
+		}
+		printf("P%d",(gt+i)->pid);
+
+		for(int j=0; j<(gt+i+1)->st - (gt+i)->st -2; j = j+2)
+		{
+			printf("  ");
+		}
+		printf(" | ");
+	}
+
+
+	//for printing bottom line
+	printf("\n");
+	printf(" ");
+	for(int i=0;i<n; i++){
+		for(int j=0; j<(gt+i+1)->st - (gt+i)->st; j++){
+			printf("--");
+		}
+		printf("  ");
+	}
+
+
+	//for printing the timeline
+	printf("\n");
+	printf("0");
+	for(int i=0;i<n; i++){
+		for(int j=0; j<(gt+i+1)->st - (gt+i)->st; j++){
+			printf("  ");
+		}
+		dur += (gt+i+1)->st - (gt+i)->st;
+		printf("%d",dur);
+
+	}
+	printf("\n");
 }
 
 void gantt(int ps[][7],int n){
@@ -171,28 +239,29 @@ void rearrange(int p[][7], int n)
 
 void performSJF_NON_PREEMPT(int ps[][7], int n)
 {
-	int completed = 0;
+	int ps_completed = 0;
 	int current_time = 0;
-	int  is_completed[100] = {0};
+	int  visited[100] = {0};
+	memset(ganttChart,0,sizeof(ganttChart));
 
-	while(completed != n)
+	while(n != ps_completed)
 	{
 		int ps_id = -1;
-		int mn = INT_MAX;
+		int remainBurst = LARGE_BURST;
 		for(int i = 0; i < n; i++)
 		{
-			if(ps[i][arr] <= current_time && is_completed[i] == 0)
+			if(0 == visited[i] && ps[i][arr] <= current_time)
 			{
-				if(ps[i][bst] < mn)
+				if(ps[i][bst] < remainBurst)
 				{
-					mn = ps[i][bst];
+					remainBurst = ps[i][bst];
 					ps_id = i;
 				}
-				if(ps[i][bst] == mn)
+				if(ps[i][bst] == remainBurst)
 				{
 					if(ps[i][arr] < ps[ps_id][arr])
 					{
-						mn = ps[i][bst];
+						remainBurst = ps[i][bst];
 						ps_id = i;
 					}
 				}
@@ -203,14 +272,24 @@ void performSJF_NON_PREEMPT(int ps[][7], int n)
 			ps[ps_id][ct]  = current_time + ps[ps_id][bst];
 			ps[ps_id][tat] = ps[ps_id][ct] - ps[ps_id][arr];
 			ps[ps_id][wt]  = ps[ps_id][tat] - ps[ps_id][bst];
-			is_completed[ps_id] = 1;
-			completed++;
+			visited[ps_id] = 1;
+
+
+			ganttChart[ps_completed].pid = ps_id + 1;
+			ganttChart[ps_completed].st  = current_time;
+
+
 			current_time = ps[ps_id][ct];
+			ps_completed++;
 
 		}
 		else
 		{ current_time++; }
 	}
+
+	ganttChart[ps_completed].st = current_time;
+
+	createGanttChart(ganttChart,ps_completed);
 
 	printf("\n*********Scheduling Parameters after SJF Non Preemptive **********\n");
 
@@ -823,7 +902,7 @@ void runMyTestCase(int *n)
 
 
 	*n = 7;
-	int test[7][7] = { {0,0,4,0,0,0,10},{0,1,2,0,0,0,3},{0,2,3,0,0,0,6},{0,3,5,0,0,0,2},
+	int test[7][7] = { {0,0,14,0,0,0,10},{0,1,2,0,0,0,3},{0,2,3,0,0,0,6},{0,3,5,0,0,0,2},
 			{0,4,1,0,0,0,4},{0,5,4,0,0,0,0},{0,6,10,0,0,0,3}};
 
 
@@ -898,7 +977,7 @@ int main(int argc, char *argv[])
 		{
 			performSJF_NON_PREEMPT(processes, n);
 			display(processes, n);
-			gantt(processes,n);
+			//gantt(processes,n);
 			calAvg(processes, n, 1);
 		}
 		break;
