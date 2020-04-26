@@ -24,6 +24,7 @@
 int processes[M][7];
 int ro[M][7];
 int priorp[M][7];
+#define LARGE_BURST 1000000
 
 #define RUN_MY_TESTCASE
 
@@ -218,34 +219,34 @@ void performSJF_NON_PREEMPT(int ps[][7], int n)
 void performSJF_PREEMPT(int ps[][7], int n)
 {
 	int current_time = 0;
-	int completed = 0;
-	int is_completed[100] = {0};
+	int ps_completed = 0;
+	int visited[100] = {0};
 	int burstRemain[100]={0};
 
 	for(int i = 0 ;i <n ;i++)
 		burstRemain[i] = ps[i][bst];
 
-
-
-	while(completed != n)
+	while(n != ps_completed)
 	{
+
+		int remainBurst = LARGE_BURST;
 		int ps_id = -1;
-		int mn = 10000000;
+
 		for(int i = 0; i < n; i++)
 		{
-			if(ps[i][arr] <= current_time && is_completed[i] == 0)
+			if(0 == visited[i] && ps[i][arr] <= current_time)
 			{
-				if(burstRemain[i] < mn)
+				if(remainBurst > burstRemain[i])
 				{
-					mn = burstRemain[i];
 					ps_id = i;
+					remainBurst = burstRemain[i];
 				}
-				if(burstRemain[i] == mn)
+				if(remainBurst == burstRemain[i])
 				{
 					if(ps[i][arr] < ps[ps_id][arr])
 					{
-						mn = burstRemain[i];
 						ps_id = i;
+						remainBurst = burstRemain[i];
 					}
 				}
 			}
@@ -260,8 +261,8 @@ void performSJF_PREEMPT(int ps[][7], int n)
 				ps[ps_id][ct] = current_time;
 				ps[ps_id][tat] = ps[ps_id][ct] - ps[ps_id][arr];
 				ps[ps_id][wt] = ps[ps_id][tat] - ps[ps_id][bst];
-				is_completed[ps_id] = 1;
-				completed++;
+				visited[ps_id] = 1;
+				ps_completed++;
 			}
 		}
 		else
@@ -277,49 +278,51 @@ void performSJF_PREEMPT(int ps[][7], int n)
 
 void performRR(int ps[][7], int n,int quant){
 
-	int current_time = 0;
-	int completed = 0;
+	int currentTime = 0;
+	int ps_completed = 0;
 	int burstRemain[100];
+	int visited[100]={0};
 
 	for(int i = 0 ;i <n ;i++)
 		burstRemain[i] = ps[i][bst];
 
 	int ps_id;
+	visited[0] = 1;
 	struct Q readyQ;
 	Q_init(&readyQ);
 	Q_PUSH(&readyQ,0);
-	int mark[100];
-	memset(mark,0,sizeof(mark));
-	mark[0] = 1;
 
-	while(completed != n) {
+	while(n != ps_completed) {
 		ps_id = Q_FRONT(&readyQ);
 		Q_POP(&readyQ);
 
 		if(burstRemain[ps_id] == ps[ps_id][bst]) {
-			if(current_time<ps[ps_id][arr])
-				current_time = ps[ps_id][arr];
+			if(currentTime<ps[ps_id][arr])
+				currentTime = ps[ps_id][arr];
 		}
 
-		if(burstRemain[ps_id]-quant > 0) {
-			burstRemain[ps_id] -= quant;
-			current_time += quant;
+		int ps_remainTimeNow = burstRemain[ps_id]- quant;
+		if(0<ps_remainTimeNow) {
+			currentTime += quant;
+			burstRemain[ps_id] = ps_remainTimeNow;
 		}
 		else {
-			current_time += burstRemain[ps_id];
-			burstRemain[ps_id] = 0;
-			completed++;
+			ps_completed++; // This process finished
 
-			ps[ps_id][ct] = current_time;
+			ps[ps_id][ct] = currentTime + burstRemain[ps_id];
 			ps[ps_id][tat] = ps[ps_id][ct] - ps[ps_id][arr];
 			ps[ps_id][wt] = ps[ps_id][tat] - ps[ps_id][bst];
+
+			currentTime = ps[ps_id][ct];
+			burstRemain[ps_id] = 0;
 
 		}
 
 		for(int i = 1; i < n; i++) {
-			if(burstRemain[i] > 0 && ps[i][arr] <= current_time && mark[i] == 0) {
+			if(0 == visited[i] && ps[i][arr] <= currentTime && burstRemain[i] > 0 ) {
+				visited[i] = 1;
 				Q_PUSH(&readyQ,i);
-				mark[i] = 1;
+
 			}
 		}
 		if(burstRemain[ps_id] > 0) {
@@ -329,8 +332,8 @@ void performRR(int ps[][7], int n,int quant){
 		if(Q_EMPTY(&readyQ)) {
 			for(int i = 1; i < n; i++) {
 				if(burstRemain[i] > 0) {
+					visited[i] = 1;
 					Q_PUSH(&readyQ,i);
-					mark[i] = 1;
 					break;
 				}
 			}
@@ -393,9 +396,9 @@ void performPRIORITY_NON_PREEMPT(int ps[][7], int n){
 }
 // priority with preemption
 void performPRIORITY_PREEMPT(int ps[][7],int n){
-	int current_time = 0;
-	int completed = 0;
-	int is_completed[100] = {0};
+	int currentTime = 0;
+	int ps_completed = 0;
+	int visited[100] = {0};
 	int burstRemain[100]={0};
 
 	for(int i = 0 ;i <n ;i++)
@@ -403,24 +406,26 @@ void performPRIORITY_PREEMPT(int ps[][7],int n){
 
 
 
-	while(completed != n)
+	while(n != ps_completed)
 	{
+
+		int remainBurst = LARGE_BURST;
 		int ps_id = -1;
-		int mn = 10000000;
+
 		for(int i = 0; i < n; i++)
 		{
-			if(ps[i][arr] <= current_time && is_completed[i] == 0)// to find the least priority amongst all the visited processes
+			if(0 == visited[i] && currentTime >= ps[i][arr])// to find the least priority amongst all the visited processes
 			{
-				if(ps[i][prior] < mn)
+				if(ps[i][prior] < remainBurst)
 				{
-					mn = ps[i][prior];
+					remainBurst = ps[i][prior];
 					ps_id = i;
 				}
-				if(ps[i][prior] == mn)
+				if(ps[i][prior] == remainBurst)
 				{
 					if(ps[i][arr] < ps[ps_id][arr])
 					{
-						mn = ps[i][prior];
+						remainBurst = ps[i][prior];
 						ps_id = i;
 					}
 				}
@@ -429,20 +434,20 @@ void performPRIORITY_PREEMPT(int ps[][7],int n){
 		if(ps_id != -1)
 		{
 			burstRemain[ps_id] -= 1;
-			current_time++;
+			currentTime++;
 			if(burstRemain[ps_id] == 0)
 
 			{
-				ps[ps_id][ct] = current_time;
+				ps[ps_id][ct] = currentTime;
 				ps[ps_id][tat] = ps[ps_id][ct] - ps[ps_id][arr];
 				ps[ps_id][wt] = ps[ps_id][tat] - ps[ps_id][bst];
-				is_completed[ps_id] = 1;
-				completed++;
+				visited[ps_id] = 1;
+				ps_completed++;
 			}
 		}
 		else
 		{
-			current_time++;
+			currentTime++;
 		}
 	}
 
