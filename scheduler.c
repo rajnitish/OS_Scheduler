@@ -24,11 +24,13 @@
 int processes[M][7];
 //int ro[M][7];
 //int priorp[M][7];
+int mlq_run = 0;
 
 struct GanttParam
 {
 	int pid;
 	int st;
+	int arr; // use for first process
 
 };
 
@@ -76,60 +78,76 @@ void calAvg(int processes[][7],int n, int a ){
 
 void createGanttChart(struct GanttParam *gt,int n){
 
-	int dur = 0;
+	if(mlq_run) return;
+	int dur = gt->arr;
 	printf("****************The Gantt Chart****************\n");
+
 	printf(" ");
 	for(int i=0;i<n; i++)
 	{
-		for(int j=0; j<(gt+i+1)->st - (gt+i)->st; j++){ //printing the top line
-			printf("--");
+		printf(" ");
+		int x = (gt+i+1)->st - (gt+i)->st;
+		for(int j=0; j<x-1; j++){
+			printf("-");
+		}
+		printf("--");
+		for(int j=0; j<x-1; j++){
+			printf("-");
 		}
 		printf("  ");
 	}
-	printf("\n");
+	printf("\n|");
 
-
-	//for printing the middle line
-	printf("| ");
-	for(int i=0;i<n; i++){
-
-		for(int j=0; j<(gt+i+1)->st - (gt+i)->st -2; j = j+2)
-		{
-			printf("  ");
+	for(int i=0;i<n; i++)
+	{
+		printf(" ");
+		int x = (gt+i+1)->st - (gt+i)->st;
+		for(int j=0; j<x-1; j++){
+			printf(" ");
 		}
+
 		printf("P%d",(gt+i)->pid);
-
-		for(int j=0; j<(gt+i+1)->st - (gt+i)->st -2; j = j+2)
-		{
-			printf("  ");
+		for(int j=0; j<x-1; j++){
+			printf(" ");
 		}
-		printf(" | ");
+		printf(" |");
 	}
+	printf("\n ");
 
-
-	//for printing bottom line
-	printf("\n");
-	printf(" ");
-	for(int i=0;i<n; i++){
-		for(int j=0; j<(gt+i+1)->st - (gt+i)->st; j++){
-			printf("--");
+	for(int i=0;i<n; i++)
+	{
+		printf(" ");
+		int x = (gt+i+1)->st - (gt+i)->st;
+		for(int j=0; j<x-1; j++){
+			printf("-");
+		}
+		printf("--");
+		for(int j=0; j<x-1; j++){
+			printf("-");
 		}
 		printf("  ");
 	}
+	printf("\n%d",dur);
 
-
-	//for printing the timeline
-	printf("\n");
-	printf("0");
-	for(int i=0;i<n; i++){
-		for(int j=0; j<(gt+i+1)->st - (gt+i)->st; j++){
-			printf("  ");
+	for(int i=0;i<n; i++)
+	{
+		printf(" ");
+		int x = (gt+i+1)->st - (gt+i)->st;
+		for(int j=0; j<x-1; j++){
+			printf(" ");
 		}
+
+		printf("  ");
+		for(int j=0; j<x-1; j++){
+			printf(" ");
+		}
+
 		dur += (gt+i+1)->st - (gt+i)->st;
-		printf("%d",dur);
+		if(dur<10)printf(" %d",dur);
+		else printf("%d",dur);
 
 	}
-	printf("\n");
+	printf("\n ");
 }
 
 void gantt(int ps[][7],int n){
@@ -301,10 +319,14 @@ void performSJF_PREEMPT(int ps[][7], int n)
 	int ps_completed = 0;
 	int visited[100] = {0};
 	int burstRemain[100]={0};
-
+	int index = 0;
 	for(int i = 0 ;i <n ;i++)
 		burstRemain[i] = ps[i][bst];
 
+
+	memset(ganttChart,0,sizeof(ganttChart));
+
+	int tmp = -1;
 	while(n != ps_completed)
 	{
 
@@ -313,12 +335,15 @@ void performSJF_PREEMPT(int ps[][7], int n)
 
 		for(int i = 0; i < n; i++)
 		{
+			int tmp = ps_id;
+
 			if(0 == visited[i] && ps[i][arr] <= current_time)
 			{
 				if(remainBurst > burstRemain[i])
 				{
 					ps_id = i;
 					remainBurst = burstRemain[i];
+
 				}
 				if(remainBurst == burstRemain[i])
 				{
@@ -326,8 +351,12 @@ void performSJF_PREEMPT(int ps[][7], int n)
 					{
 						ps_id = i;
 						remainBurst = burstRemain[i];
+
 					}
 				}
+
+
+
 			}
 		}
 		if(ps_id != -1)
@@ -335,20 +364,35 @@ void performSJF_PREEMPT(int ps[][7], int n)
 			burstRemain[ps_id] -= 1;
 			current_time++;
 			if(burstRemain[ps_id] == 0)
-
 			{
 				ps[ps_id][ct] = current_time;
 				ps[ps_id][tat] = ps[ps_id][ct] - ps[ps_id][arr];
 				ps[ps_id][wt] = ps[ps_id][tat] - ps[ps_id][bst];
+
 				visited[ps_id] = 1;
 				ps_completed++;
 			}
+
+
+			if(tmp !=ps_id+1)
+			{
+				ganttChart[index].pid = ps_id + 1;
+				ganttChart[index].st  = current_time;
+				index++;
+				tmp = ps_id + 1;
+			}
+
+
 		}
 		else
 		{
 			current_time++;
 		}
 	}
+
+	ganttChart[index].st = current_time+1;
+
+	createGanttChart(ganttChart,index);
 
 	printf("\n*********Scheduling Parameters after SJF Preemptive **********\n");
 
@@ -361,6 +405,10 @@ void performRR(int ps[][7], int n,int quant){
 	int ps_completed = 0;
 	int burstRemain[100];
 	int visited[100]={0};
+	int index = 0;
+
+
+	memset(ganttChart,0,sizeof(ganttChart));
 
 	for(int i = 0 ;i <n ;i++)
 		burstRemain[i] = ps[i][bst];
@@ -374,6 +422,11 @@ void performRR(int ps[][7], int n,int quant){
 	while(n != ps_completed) {
 		ps_id = Q_FRONT(&readyQ);
 		Q_POP(&readyQ);
+
+
+		ganttChart[index].pid = ps_id + 1;
+		ganttChart[index].st  = currentTime;
+		index++;
 
 		if(burstRemain[ps_id] == ps[ps_id][bst]) {
 			if(currentTime<ps[ps_id][arr])
@@ -421,6 +474,10 @@ void performRR(int ps[][7], int n,int quant){
 
 	}
 
+	ganttChart[index].st  = currentTime;
+
+	ganttChart[index].arr = ps[0][arr];
+	createGanttChart(ganttChart,index);
 
 
 	printf("\n*********Scheduling Parameters after Round Robin **********\n");
@@ -431,6 +488,7 @@ void performPRIORITY_NON_PREEMPT(int ps[][7], int n){
 	int completed = 0;
 	int current_time = 0;
 	int  is_completed[100] = {0};
+
 
 	while(completed != n)
 	{
@@ -481,6 +539,12 @@ void performPRIORITY_PREEMPT(int ps[][7],int n){
 	int visited[100] = {0};
 	int burstRemain[100]={0};
 
+
+	int tmp =-1;
+	int index = 0;
+	memset(ganttChart,0,sizeof(ganttChart));
+
+
 	for(int i = 0 ;i <n ;i++)
 		burstRemain[i] = ps[i][bst];
 
@@ -524,12 +588,24 @@ void performPRIORITY_PREEMPT(int ps[][7],int n){
 				visited[ps_id] = 1;
 				ps_completed++;
 			}
+
+			if(tmp !=ps_id+1)
+			{
+				ganttChart[index].pid = ps_id + 1;
+				ganttChart[index].st  = currentTime;
+				index++;
+				tmp = ps_id + 1;
+			}
 		}
 		else
 		{
 			currentTime++;
 		}
 	}
+
+	ganttChart[index].st = currentTime+1;
+
+	createGanttChart(ganttChart,index);
 
 	printf("\n*********Process Parameters after Priority Preemptive ********\n");
 	display(processes, n);
@@ -580,6 +656,7 @@ void performPRIORITY(int processes[][7],int n,int option){
 }
 
 void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
+	mlq_run = 1;
 	printf("Dividing the processes in 3 levels of queue based upon priority \n");
 	printf("[0 - 2] Upper Level (First to serve)  [3 - 5] Mid Level (Next to serve) [Above 6] Last Level\n ");
 
@@ -665,7 +742,7 @@ void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
 		printf("\nProcessing  the second queue\n");
 		performSJF_NON_PREEMPT(q2,y);
 		display(q2, y);
-		gantt(q2,y);
+		//gantt(q2,y);
 		calAvg(q2, y, 7);
 	}
 	else
@@ -676,7 +753,7 @@ void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
 		printf("\nProcessing  the third queue\n");
 		performFCFS(q3,z);
 		display(q3, z);
-		gantt(q3,z);
+		//gantt(q3,z);
 		calAvg(q3, z, 8);
 	}
 	else
@@ -689,6 +766,8 @@ void performMULTI_LEVEL_QUEUE(int processes[][7], int n){
 	printf("Average waiting time and Turn around time after implementing multi-queues\n");
 	printf("Average waiting time = %0.2f\n",avg_wt[6]);
 	printf("Average turn around time = %0.2f \n",avg_tat[6]);
+
+	mlq_run = 0;
 
 }
 
@@ -704,6 +783,7 @@ void updateTransposedProcess(int *q1,int x,int *q2,int y)
 	}
 }
 void performMULTI_LEVEL_FEEDBACK_QUEUE(int processes[][7], int n){
+	mlq_run = 1;
 	printf("Dividing the processes in 3 levels of queue based upon priority \n");
 	printf("[0 - 2] Upper Level (First to serve)  [3 - 5] Mid Level (Next to serve) [Above 6] Last Level\n ");
 
@@ -828,7 +908,7 @@ void performMULTI_LEVEL_FEEDBACK_QUEUE(int processes[][7], int n){
 		printf("\nProcessing  the third queue\n");
 		updateTransposedProcess((int *)q2,y,(int *)q3,z);
 		performFCFS(q3,z);
-		gantt(q3,z);
+		//gantt(q3,z);
 		display(q3, z);
 		calAvg(q3, z, 9);
 	}
@@ -843,6 +923,7 @@ void performMULTI_LEVEL_FEEDBACK_QUEUE(int processes[][7], int n){
 	avg_tat[7]=(avg_tat[9]+avg_tat[7]+avg_tat[8])/active_count;
 	printf("Average waiting time = %0.2f\n",avg_wt[7]);
 	printf("Average turn around time = %0.2f \n",avg_tat[7]);
+	mlq_run = 0;
 }
 void PrintStats(){
 	printf("---------------------------------------------------------------------------------------\n");
@@ -898,12 +979,12 @@ void runMyTestCase(int *n)
 
 	//*n = 6;
 	//int test[6][7] = { {0,0,4,0,0,0,10},{0,1,5,0,0,0,8},{0,2,2,0,0,0,6},{0,3,1,0,0,0,2},
-	//	{0,4,6,0,0,0,4},{0,6,3,0,0,0,0} };
+	//		{0,4,6,0,0,0,4},{0,6,3,0,0,0,0} };
 
 
 	*n = 7;
-	int test[7][7] = { {0,0,14,0,0,0,10},{0,1,2,0,0,0,3},{0,2,3,0,0,0,6},{0,3,5,0,0,0,2},
-			{0,4,1,0,0,0,4},{0,5,4,0,0,0,0},{0,6,10,0,0,0,3}};
+	int test[7][7] = { {0,0,4,0,0,0,10},{0,1,2,0,0,0,8},{0,2,3,0,0,0,6},{0,3,5,0,0,0,2},
+			{0,4,1,0,0,0,4},{0,5,4,0,0,0,0},{0,6,6,0,0,0,3}};
 
 
 	for(int i = 0;i<*n;i++)
