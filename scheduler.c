@@ -31,6 +31,7 @@ struct GanttParam
 	int pid;
 	int st;
 	int arr; // use for first process
+	int durn;
 
 };
 
@@ -150,6 +151,81 @@ void createGanttChart(struct GanttParam *gt,int n){
 	printf("\n ");
 }
 
+void createGanttChart1(struct GanttParam *gt,int n){
+
+	if(mlq_run) return;
+	int dur = gt->arr;
+	printf("****************The Gantt Chart****************\n");
+
+	printf(" ");
+	for(int i=0;i<n; i++)
+	{
+		printf(" ");
+		int x = (gt+i+1)->st - (gt+i)->st;
+		for(int j=0; j<x-1; j++){
+			printf("-");
+		}
+		printf("--");
+		for(int j=0; j<x-1; j++){
+			printf("-");
+		}
+		printf("  ");
+	}
+	printf("\n|");
+
+	for(int i=0;i<n; i++)
+	{
+		printf(" ");
+		int x = (gt+i)->durn;
+		for(int j=0; j<x-1; j++){
+			printf(" ");
+		}
+		if((gt+i)->pid == -1)printf("XX");
+		else 		printf("P%d",(gt+i)->pid);
+		for(int j=0; j<x-1; j++){
+			printf(" ");
+		}
+		printf(" |");
+	}
+	printf("\n ");
+
+	for(int i=0;i<n; i++)
+	{
+		printf(" ");
+		int x = (gt+i+1)->st - (gt+i)->st;
+		for(int j=0; j<x-1; j++){
+			printf("-");
+		}
+		printf("--");
+		for(int j=0; j<x-1; j++){
+			printf("-");
+		}
+		printf("  ");
+	}
+	printf("\n%d",dur);
+
+	for(int i=0;i<n; i++)
+	{
+		printf(" ");
+		int x = (gt+i+1)->st - (gt+i)->st;
+		for(int j=0; j<x-1; j++){
+			printf(" ");
+		}
+
+		printf("  ");
+		for(int j=0; j<x-1; j++){
+			printf(" ");
+		}
+
+		dur += (gt+i+1)->st - (gt+i)->st;
+		if((gt+i)->st + (gt+i)->durn<10)printf(" %d",(gt+i)->st + (gt+i)->durn);
+		else printf("%d",(gt+i)->st + (gt+i)->durn);
+
+	}
+	printf("\n ");
+}
+
+
 void gantt(int ps[][7],int n){
 	printf("****************The Gantt Chart****************\n");
 	printf(" ");
@@ -201,14 +277,33 @@ void gantt(int ps[][7],int n){
 
 void performFCFS( int ps[][7], int n)
 {
+
+	memset(ganttChart,0,sizeof(ganttChart));
+
 	ps[0][wt]=0;
 	ps[0][tat]=ps[0][bst];
 	ps[0][ct]=ps[0][arr]+ps[0][bst]+ps[0][wt];
 
+
+	ganttChart[0].pid = ps[0][pid];
+	ganttChart[0].st  = ps[0][arr];
+	ganttChart[0].durn = ps[0][bst];
+
+	int time;
+
+	int index = 1;
 	for(int i=1; i<n;i++)
 	{
-		if(ps[i-1][ct]<ps[i][arr])
+		if(ps[i-1][ct]<ps[i][arr]){
+
+			ganttChart[index].pid = -1;
+			ganttChart[index].st  = ps[i-1][ct];
+			ganttChart[index].durn = ps[i][arr] - ps[i-1][ct];
+			index++;
+
 			ps[i][ct]=ps[i][arr]+ps[i][bst];
+
+		}
 		else
 			ps[i][ct]=ps[i-1][ct]+ps[i][bst];
 
@@ -221,7 +316,18 @@ void performFCFS( int ps[][7], int n)
 			printf("\nNOT CONVINCED\n");
 			ps[i][3]=0;
 		}
+
+
+		ganttChart[index].pid = ps[i][pid];
+		ganttChart[index].st  = ganttChart[index -1].st+ ganttChart[index -1].durn;
+		ganttChart[index].durn = ps[i][bst];
+		index++;
+
+		time  = ps[i][ct];
 	}
+
+	ganttChart[index].st = time;
+	createGanttChart1(ganttChart,index);
 
 	//Display processes along with all details
 	printf("\n****************Scheduling Parameters after FCFS******************\n");
@@ -260,6 +366,7 @@ void performSJF_NON_PREEMPT(int ps[][7], int n)
 	int ps_completed = 0;
 	int current_time = 0;
 	int  visited[100] = {0};
+	int index = 0;
 	memset(ganttChart,0,sizeof(ganttChart));
 
 	while(n != ps_completed)
@@ -293,8 +400,19 @@ void performSJF_NON_PREEMPT(int ps[][7], int n)
 			visited[ps_id] = 1;
 
 
-			ganttChart[ps_completed].pid = ps_id + 1;
-			ganttChart[ps_completed].st  = current_time;
+			if(ps[index][arr]>ps[index-1][ct])
+			{
+				ganttChart[index].pid = -1;
+				ganttChart[index].st  = ganttChart[index-1].st + ganttChart[index-1].durn;
+				ganttChart[index].durn = ps[ps_id][arr] - ps[ps_id-1][ct];
+				index++;
+			}
+
+			ganttChart[index].pid = ps_id + 1;
+			ganttChart[index].st  = current_time;
+			ganttChart[index].durn = ps[ps_id][bst];
+			index++;
+
 
 
 			current_time = ps[ps_id][ct];
@@ -305,9 +423,9 @@ void performSJF_NON_PREEMPT(int ps[][7], int n)
 		{ current_time++; }
 	}
 
-	ganttChart[ps_completed].st = current_time;
+	ganttChart[index].st = current_time;
 
-	createGanttChart(ganttChart,ps_completed);
+	createGanttChart1(ganttChart,ps_completed);
 
 	printf("\n*********Scheduling Parameters after SJF Non Preemptive **********\n");
 
@@ -973,8 +1091,8 @@ void PrintStats(){
 }
 void runMyTestCase(int *n)
 {
-	//*n = 5;
-	//int test[5][7] = { {0,0,5,0,0,0,0},{0,1,3,0,0,0,0},{0,2,1,0,0,0,0},{0,3,2,0,0,0,0},{0,4,3,0,0,0,0} };
+	*n = 5;
+	int test[5][7] = { {0,0,5,0,0,0,0},{0,8,3,0,0,0,0},{0,10,1,0,0,0,0},{0,12,2,0,0,0,0},{0,14,3,0,0,0,0} };
 
 
 	//*n = 6;
@@ -982,9 +1100,10 @@ void runMyTestCase(int *n)
 	//		{0,4,6,0,0,0,4},{0,6,3,0,0,0,0} };
 
 
-	*n = 7;
-	int test[7][7] = { {0,0,4,0,0,0,10},{0,1,2,0,0,0,8},{0,2,3,0,0,0,6},{0,3,5,0,0,0,2},
-			{0,4,1,0,0,0,4},{0,5,4,0,0,0,0},{0,6,6,0,0,0,3}};
+
+	//	*n = 7;
+	//int test[7][7] = { {0,0,4,0,0,0,10},{0,1,2,0,0,0,8},{0,2,3,0,0,0,6},{0,3,5,0,0,0,2},
+	//{0,4,1,0,0,0,4},{0,5,4,0,0,0,0},{0,6,6,0,0,0,3}};
 
 
 	for(int i = 0;i<*n;i++)
@@ -1019,6 +1138,8 @@ int main(int argc, char *argv[])
 	rearrange(processes,n); // arranging data as per the arrival time
 
 	char ch = 'Y';
+
+	processes[0][arr] = 0;
 	while('Y' == ch || 'y' == ch){
 
 		fflush(stdin);
@@ -1050,7 +1171,6 @@ int main(int argc, char *argv[])
 		{
 			performFCFS(processes, n);
 			display(processes, n);
-			gantt(processes,n);
 			calAvg(processes, n, 0);
 		}
 		break;
@@ -1058,7 +1178,6 @@ int main(int argc, char *argv[])
 		{
 			performSJF_NON_PREEMPT(processes, n);
 			display(processes, n);
-			//gantt(processes,n);
 			calAvg(processes, n, 1);
 		}
 		break;
